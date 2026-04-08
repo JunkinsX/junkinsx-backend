@@ -3,6 +3,7 @@ package com.example.junkinsx.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.Map;
 @Getter
 @Setter
@@ -18,8 +19,8 @@ public class Pipeline {
     private String privateKey;
     @Lob
     private String publicKey;
-    @OneToMany
-    Map<String, Command> map;
+    @ElementCollection
+    private List<String> commands;
     private String webhookSecret;
     private Long userId;
 }
