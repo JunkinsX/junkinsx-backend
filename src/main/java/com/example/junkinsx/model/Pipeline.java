@@ -2,7 +2,7 @@ package com.example.junkinsx.model;
 
 import jakarta.persistence.*;
 
-import java.util.List;
+import java.util.Map;
 
 @Entity
 public class Pipeline {
@@ -12,13 +12,12 @@ public class Pipeline {
     private String repoUrl;
     private String serverIp;
     private String username;
-
     @Lob
     private String privateKey;
     @Lob
     private String publicKey;
-    @ElementCollection
-    private List<String> commands;
+    @OneToMany
+    Map<String, Command> map;
     private String webhookSecret;
     private Long userId;
 }
