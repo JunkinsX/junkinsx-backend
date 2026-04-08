@@ -1,9 +1,11 @@
 package com.example.junkinsx.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
-
+@Getter
+@Setter
 @Entity
 public class Job {
     @Id

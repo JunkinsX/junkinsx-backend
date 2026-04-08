@@ -1,9 +1,12 @@
 package com.example.junkinsx.service;
 
+import org.springframework.stereotype.Service;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+@Service
 public class SshKeyService {
     public Map<String, String> generateKeyPair(Long id) throws Exception{
         String path = "keys/pipeline-" + id;
