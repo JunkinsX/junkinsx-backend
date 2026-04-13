@@ -1,0 +1,6 @@
+user - long id, string username, string email, string password
+pipeline - long id, long pipeline description, list<bundle> ipaddress bundle, list<task> tasks list, list<secret> secret list
+task - long id, string task name, string task description, list<commands> commandslist
+bundle - long id, string bundle name, string bundle description
+command - long id, list<string> commandList
+secret - long id, string secret name, string secret content

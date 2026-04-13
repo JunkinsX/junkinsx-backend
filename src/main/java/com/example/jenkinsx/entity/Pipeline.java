@@ -15,5 +15,5 @@ public class Pipeline {
     private Long pipelineDescription;
     private List<Bundle> ipAddressBundle;
     private List<Task> tasksList;
-
+    private List<Secret> secretList;
 }
