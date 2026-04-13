@@ -16,4 +16,5 @@ public class Pipeline {
     private List<Bundle> ipAddressBundle;
     private List<Task> tasksList;
     private List<Secret> secretList;
+    private String publicKey;
 }
