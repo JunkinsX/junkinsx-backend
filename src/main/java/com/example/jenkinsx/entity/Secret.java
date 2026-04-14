@@ -17,4 +17,9 @@ public class Secret {
     private Long id;
     private String SecretName;
     private String SecretContent;
+
+    public Secret(String secretName, String secretContent) {
+        this.SecretName = secretName;
+        this.SecretContent = secretContent;
+    }
 }

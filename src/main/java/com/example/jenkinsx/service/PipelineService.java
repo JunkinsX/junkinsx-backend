@@ -1,9 +1,7 @@
 package com.example.jenkinsx.service;
 
 import com.example.jenkinsx.dto.*;
-import com.example.jenkinsx.entity.Bundle;
-import com.example.jenkinsx.entity.Pipeline;
-import com.example.jenkinsx.entity.User;
+import com.example.jenkinsx.entity.*;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -46,5 +44,27 @@ public class PipelineService {
         //execute or push onto rabbitmq/any message queue
         return "";
     }
+    public String SetPublicPrivateKey(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
+        //execute script or process to create a publickey, privatekey and save onto db
+        return "";
+    }
+    public List<Bundle> getBundle(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
+        return pipeline.getIpAddressBundle();
+    }
+    public List<Task>  getTask(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
+        return pipeline.getTasksList();
+    }
+    public List<Secret> getSecret(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
+        return pipeline.getSecretList();
+    }
+    public String getPublicKey(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
+        return pipeline.getPublicKey();
+    }
 
 }
+

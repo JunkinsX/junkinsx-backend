@@ -25,6 +25,7 @@ public class Pipeline {
     //secret variables related to pipeline
     private List<Secret> secretList;
     private String publicKey;
+    private String privateKey;
 
     public Pipeline(String pipelineName, String pipelineDescription) {
         this.pipelineName = pipelineName;
