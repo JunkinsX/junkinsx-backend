@@ -14,5 +14,6 @@ public class Task {
     private Long id;
     private String taskName;
     private String taskDescription;
+    //list of commands to be executed via pipeline
     private List<Commands> commandsList;
 }

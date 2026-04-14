@@ -13,8 +13,11 @@ public class Pipeline {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long pipelineDescription;
+    //bundle of ipaddress named
     private List<Bundle> ipAddressBundle;
+    //task list with names
     private List<Task> tasksList;
+    //secret variables related to pipeline
     private List<Secret> secretList;
     private String publicKey;
 }
