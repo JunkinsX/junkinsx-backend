@@ -2,8 +2,16 @@ package com.example.jenkinsx.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.*;
 
 @Entity
+@Table(name = "secrets")
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Secret {
     @Id
     private Long id;

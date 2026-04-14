@@ -1,13 +1,17 @@
 package com.example.jenkinsx.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.List;
+import lombok.*;
 
 @Entity
+@Table(name = "bundles")
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Bundle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
