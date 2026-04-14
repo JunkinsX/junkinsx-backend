@@ -20,4 +20,10 @@ public class Task {
     private String taskDescription;
     //list of commands to be executed via pipeline
     private List<Commands> commandsList;
+
+    public Task(String taskName, String taskDescription, List<Commands> commandsList) {
+        this.taskName = taskName;
+        this.taskDescription = taskDescription;
+        this.commandsList = commandsList;
+    }
 }

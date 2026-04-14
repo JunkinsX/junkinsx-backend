@@ -3,6 +3,9 @@ package com.example.jenkinsx.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.nio.channels.Pipe;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -17,6 +20,8 @@ public class User {
     private String username;
     private String email;
     private String password;
+    private List<Pipeline> pipelineList;
+    private List<Bundle> ipaddressBundles;
 
     public User(String username, String email, String password) {
         this.email = email;

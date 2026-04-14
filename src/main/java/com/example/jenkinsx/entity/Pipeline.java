@@ -16,7 +16,8 @@ public class Pipeline {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long pipelineDescription;
+    private String pipelineName;
+    private String pipelineDescription;
     //bundle of ipaddress named
     private List<Bundle> ipAddressBundle;
     //task list with names
@@ -24,4 +25,14 @@ public class Pipeline {
     //secret variables related to pipeline
     private List<Secret> secretList;
     private String publicKey;
+
+    public Pipeline(String pipelineName, String pipelineDescription) {
+        this.pipelineName = pipelineName;
+        this.pipelineDescription = pipelineDescription;
+    }
+
+    public void getIpAddressBundle(List<Bundle> bundleList) {
+        this.ipAddressBundle = bundleList;
+    }
+
 }
