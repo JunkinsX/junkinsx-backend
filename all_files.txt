@@ -972,11 +972,7 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <change beforePath="$PROJECT_DIR$/../demo1/src/main/java/com/example/demo/controller/DemoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../demo1/src/main/java/com/example/demo/controller/DemoController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../demo4/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/src/main/java/com/example/demo4/controller/controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/all_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/all_files.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/JenkinsXApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/JenkinsXApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Pipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Pipeline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1076,7 +1072,7 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <workItem from="1775153039289" duration="272000" />
       <workItem from="1776074402563" duration="2484000" />
       <workItem from="1776166863560" duration="8283000" />
-      <workItem from="1776242443514" duration="5286000" />
+      <workItem from="1776242443514" duration="5433000" />
     </task>
     <servers />
   </component>
@@ -1343,13 +1339,7 @@ public class WebhookController {
             System.out.println("Branch: " + branch);
             List<Pipeline> pipelines = pipelineRepository.findByRepoUrl(repoUrl);
             for (Pipeline p : pipelines) {
-                new Thread(() -> {
-                    try {
-                        pipelineService.runPipelineAsync(p.getId());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }).start();
+                pipelineService.runPipelineAsync(p.getId());
             }
             return "Triggered pipelines: " + pipelines.size();
         } catch (Exception e) {
