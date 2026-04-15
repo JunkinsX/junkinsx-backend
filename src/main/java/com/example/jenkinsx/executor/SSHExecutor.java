@@ -4,12 +4,14 @@ import com.jcraft.jsch.*;
 
 public class SSHExecutor {
 
-    public static void executeSingleCommand(
+    public static String executeSingleCommand(
             String host,
             String user,
             String privateKey,
             String command
     ) {
+
+        StringBuilder output = new StringBuilder();
 
         try {
             JSch jsch = new JSch();
@@ -22,23 +24,31 @@ public class SSHExecutor {
             ChannelExec channel = (ChannelExec) session.openChannel("exec");
             channel.setCommand(command);
 
+            channel.setInputStream(null);
+            java.io.InputStream in = channel.getInputStream();
+
             channel.connect();
 
-            while (!channel.isClosed()) {
+            byte[] buffer = new byte[1024];
+
+            while (true) {
+                while (in.available() > 0) {
+                    int i = in.read(buffer, 0, 1024);
+                    if (i < 0) break;
+                    output.append(new String(buffer, 0, i));
+                }
+
+                if (channel.isClosed()) break;
                 Thread.sleep(100);
-            }
-
-            int exitStatus = channel.getExitStatus();
-
-            if (exitStatus != 0) {
-                throw new RuntimeException("Command failed on " + host);
             }
 
             channel.disconnect();
             session.disconnect();
 
+            return output.toString();
+
         } catch (Exception e) {
-            throw new RuntimeException("SSH failed: " + e.getMessage());
+            return "ERROR: " + e.getMessage();
         }
     }
 }

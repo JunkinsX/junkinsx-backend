@@ -2,6 +2,7 @@ package com.example.jenkinsx.service;
 
 import com.example.jenkinsx.dto.*;
 import com.example.jenkinsx.entity.*;
+import com.example.jenkinsx.repository.PipelineLogRepository;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
 import com.example.jenkinsx.executor.SSHExecutor;
@@ -15,11 +16,13 @@ public class PipelineService {
 
     private final PipelineRepository pipelineRepository;
     private final UserRepository userRepository;
+    private final PipelineLogRepository logRepository;
 
     public PipelineService(PipelineRepository pipelineRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, PipelineLogRepository pipelineLogRepository) {
         this.pipelineRepository = pipelineRepository;
         this.userRepository = userRepository;
+        this.logRepository = pipelineLogRepository;
     }
 
 
@@ -94,15 +97,26 @@ public class PipelineService {
                         }
                     }
                     for (Task task : pipeline.getTasksList()) {
+
                         for (Commands cmd : task.getCommandsList()) {
+
                             String script = secretExports +
                                     String.join(" && ", cmd.getCommandList());
-                            SSHExecutor.executeSingleCommand(
+
+                            String result = SSHExecutor.executeSingleCommand(
                                     ip,
                                     bundle.getUsername(),
                                     pipeline.getPrivateKey(),
                                     script
                             );
+
+                            PipelineLog log = PipelineLog.builder()
+                                    .pipelineId(pipeline.getId())
+                                    .output(result)
+                                    .status(result.contains("ERROR") ? "FAILED" : "SUCCESS")
+                                    .build();
+
+                            logRepository.save(log);
                         }
                     }
                 }
