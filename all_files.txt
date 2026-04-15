@@ -954,9 +954,6 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b714dd14-f8ea-4a91-b1df-794aed1d46cd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineLogController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/PipelineLog.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/repository/PipelineLogRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" afterDir="false" />
@@ -975,8 +972,13 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <change beforePath="$PROJECT_DIR$/../demo1/src/main/java/com/example/demo/controller/DemoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../demo1/src/main/java/com/example/demo/controller/DemoController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../demo4/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/src/main/java/com/example/demo4/controller/controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/executor/SSHExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/executor/SSHExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/all_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/all_files.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/BundleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/BundleController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/TaskController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/BundleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/BundleService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/TaskService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1076,7 +1078,7 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <workItem from="1775153039289" duration="272000" />
       <workItem from="1776074402563" duration="2484000" />
       <workItem from="1776166863560" duration="8283000" />
-      <workItem from="1776242443514" duration="5716000" />
+      <workItem from="1776242443514" duration="6536000" />
     </task>
     <servers />
   </component>
@@ -1144,6 +1146,10 @@ public class BundleController {
     public List<Bundle> addToUser(@RequestBody AddBundleToUser dto) {
         return bundleService.addBundleToUser(dto);
     }
+    @GetMapping
+    public List<Bundle> GetBundle(@RequestParam Long userId){
+        return bundleService.getBundle(userId);
+    }
 }
 
 
@@ -1155,6 +1161,8 @@ import com.example.jenkinsx.dto.*;
 import com.example.jenkinsx.entity.Pipeline;
 import com.example.jenkinsx.service.PipelineService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/pipeline")
@@ -1196,7 +1204,12 @@ public class PipelineController {
     public String execute(@PathVariable Long id) {
         return pipelineService.executePipeline(id);
     }
+    @GetMapping()
+    public List<Pipeline> GetAllPipeline(@RequestParam Long userId){
+        return pipelineService.getAllPipeline(userId);
+    }
 }
+
 
 
 
@@ -1266,6 +1279,8 @@ import com.example.jenkinsx.entity.Task;
 import com.example.jenkinsx.service.TaskService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/task")
 @CrossOrigin("*")
@@ -1280,6 +1295,10 @@ public class TaskController {
     @PostMapping("/create")
     public Task create(@RequestBody AddTask dto) {
         return taskService.addTask(dto);
+    }
+    @GetMapping
+    public List<Task> getTask(@RequestParam Long pipelineId){
+        return taskService.getAllTasksOfUser(pipelineId);
     }
 }
 
@@ -2025,6 +2044,10 @@ public class BundleService {
         user.addBundle(addBundleToUser.getBundle());
         return user.getIpaddressBundles();
     }
+    public List<Bundle> getBundle(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        return user.getIpaddressBundles();
+    }
 }
 
 
@@ -2042,6 +2065,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class PipelineService {
@@ -2166,6 +2190,10 @@ public class PipelineService {
     public void runPipelineAsync(Long id) {
         executePipeline(id);
     }
+    public List<Pipeline> getAllPipeline(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        return user.getPipelineList();
+    }
 }
 
 
@@ -2207,17 +2235,25 @@ public class SecretService {
 package com.example.jenkinsx.service;
 
 import com.example.jenkinsx.dto.AddTask;
+import com.example.jenkinsx.entity.Pipeline;
 import com.example.jenkinsx.entity.Task;
+import com.example.jenkinsx.entity.User;
+import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.TaskRepository;
+import com.example.jenkinsx.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final PipelineRepository pipelineRepository;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, PipelineRepository pipelineRepository) {
         this.taskRepository = taskRepository;
+        this.pipelineRepository = pipelineRepository;
     }
 
     public Task addTask(AddTask dto) {
@@ -2229,6 +2265,10 @@ public class TaskService {
         );
 
         return taskRepository.save(task);
+    }
+    public List<Task> getAllTasksOfUser(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()->new RuntimeException("Pipeline not found"));
+        return pipeline.getTasksList();
     }
 }
 
