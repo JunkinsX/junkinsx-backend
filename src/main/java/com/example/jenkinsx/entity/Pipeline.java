@@ -1,9 +1,9 @@
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Table(name = "pipelines")
@@ -13,30 +13,35 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Pipeline {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String pipelineName;
     private String pipelineDescription;
-    //bundle of ipaddress named
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pipeline_id")
     private List<Bundle> ipAddressBundle;
-    //task list with names
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pipeline_id")
     private List<Task> tasksList;
-    //secret variables related to pipeline
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pipeline_id")
     private List<Secret> secretList;
+
     private String publicKey;
     private String privateKey;
+
+    @Column(length = 1000)
+    private String repoUrl;
+    private String webhookSecret;
 
     public Pipeline(String pipelineName, String pipelineDescription) {
         this.pipelineName = pipelineName;
         this.pipelineDescription = pipelineDescription;
     }
-
-    public void getIpAddressBundle(List<Bundle> bundleList) {
-        this.ipAddressBundle = bundleList;
-    }
-
 }

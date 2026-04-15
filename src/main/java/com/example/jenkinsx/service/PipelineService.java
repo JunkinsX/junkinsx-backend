@@ -4,80 +4,116 @@ import com.example.jenkinsx.dto.*;
 import com.example.jenkinsx.entity.*;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
+import com.example.jenkinsx.executor.SSHExecutor;
 import org.springframework.stereotype.Service;
 
-import java.nio.channels.Pipe;
-import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class PipelineService {
-    private PipelineRepository pipelineRepository;
-    private UserRepository userRepository;
-    public PipelineService(PipelineRepository pipelineRepository, UserRepository userRepository){
+
+    private final PipelineRepository pipelineRepository;
+    private final UserRepository userRepository;
+
+    public PipelineService(PipelineRepository pipelineRepository,
+                           UserRepository userRepository) {
         this.pipelineRepository = pipelineRepository;
         this.userRepository = userRepository;
     }
-    public Pipeline addPipeline(AddPipeline addPipeline) {
-        Pipeline pipeline = new Pipeline(addPipeline.getPipelineName(), addPipeline.getPipelineDescription());
-        User user = userRepository.findById(addPipeline.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
-        List<Pipeline> list = user.getPipelineList();
-        list.add(pipeline);
-        pipelineRepository.save(pipeline);
+
+
+    private String normalizeRepo(String url) {
+        if (url == null) return null;
+        return url.replace(".git", "").trim();
+    }
+
+    public Pipeline addPipeline(AddPipeline dto) {
+
+        User user = userRepository.findById(dto.getUserId()).orElseThrow();
+
+        Pipeline pipeline = new Pipeline(
+                dto.getPipelineName(),
+                dto.getPipelineDescription()
+        );
+
+        pipeline.setRepoUrl(normalizeRepo(dto.getRepoUrl()));
+
+        pipeline = pipelineRepository.save(pipeline);
+
+        if (user.getPipelineList() == null) {
+            user.setPipelineList(new ArrayList<>());
+        }
+
+        user.getPipelineList().add(pipeline);
+        userRepository.save(user);
+
         return pipeline;
     }
-    public BundleWithPipeline addBundleToPipeline(AddBundleToPipeline bundleToPipeline) {
-        Pipeline pipeline = pipelineRepository.findById(bundleToPipeline.getPipelineId()).orElseThrow(() -> new RuntimeException("Pipeline not found"));
-        pipeline.setIpAddressBundle(bundleToPipeline.getBundleList());
-        return new BundleWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getIpAddressBundle());
+
+    public Pipeline addBundle(AddBundleToPipeline dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setIpAddressBundle(dto.getBundleList());
+        return pipelineRepository.save(pipeline);
     }
-    public TaskWithPipeline addTasksWithPipeline(AddTasksToPipeline addTasksToPipeline){
-        Pipeline pipeline = pipelineRepository.findById(addTasksToPipeline.getPipelineId()).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        pipeline.setTasksList(addTasksToPipeline.getTaskList());
-        return new TaskWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getTasksList());
+
+    public Pipeline addTasks(AddTasksToPipeline dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setTasksList(dto.getTaskList());
+        return pipelineRepository.save(pipeline);
     }
-    public SecretWithPipeline addSecretsWithPipeline(AddSecretsToPipeline addSecretsToPipeline){
-        Pipeline pipeline = pipelineRepository.findById(addSecretsToPipeline.getPipelineId()).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        pipeline.setSecretList(addSecretsToPipeline.getSecretList());
-        return new SecretWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getSecretList());
+
+    public Pipeline addSecrets(AddSecretsToPipeline dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setSecretList(dto.getSecretList());
+        return pipelineRepository.save(pipeline);
     }
-    public String ExecutePipeline(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        //execute or push onto rabbitmq/any message queue
-        return "";
+
+    public Pipeline setKeys(SetPublicPrivateKey dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setPublicKey(dto.getPublicKey());
+        pipeline.setPrivateKey(dto.getPrivateKey());
+        return pipelineRepository.save(pipeline);
     }
-    public PublicKeyWithPipeline setPublicPrivateKey(SetPublicPrivateKey setPublicPrivateKey){
-        Pipeline pipeline = pipelineRepository.findById(setPublicPrivateKey.getPipelineId()).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        pipeline.setPublicKey(setPublicPrivateKey.getPublicKey());
-        pipeline.setPrivateKey(setPublicPrivateKey.getPrivateKey());
-        return new PublicKeyWithPipeline(pipeline.getId(), pipeline.getPublicKey());
-    }
-    public String getPipelineName(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        return pipeline.getPipelineName();
-    }
-    public String getPipelineDescription(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        return pipeline.getPipelineDescription();
-    }
-    public List<Bundle> getBundle(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getIpAddressBundle();
-    }
-    public List<Task>  getTask(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getTasksList();
-    }
-    public List<Secret> getSecret(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getSecretList();
-    }
-    public String getPrivateKey(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getPrivateKey();
-    }
-    public String getPublicKey(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getPublicKey();
+
+    public String executePipeline(Long pipelineId) {
+
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow();
+
+        if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
+            throw new RuntimeException("Pipeline incomplete");
+        }
+
+        for (Bundle bundle : pipeline.getIpAddressBundle()) {
+
+            for (String ip : bundle.getIpAddresses()) {
+
+                String secretExports = "";
+
+                if (pipeline.getSecretList() != null) {
+                    for (Secret s : pipeline.getSecretList()) {
+                        secretExports += "export " + s.getSecretName() +
+                                "=" + s.getSecretContent() + " && ";
+                    }
+                }
+
+                for (Task task : pipeline.getTasksList()) {
+
+                    for (Commands cmd : task.getCommandsList()) {
+
+                        String script = secretExports +
+                                String.join(" && ", cmd.getCommandList());
+
+                        SSHExecutor.executeSingleCommand(
+                                ip,
+                                bundle.getUsername(),
+                                pipeline.getPrivateKey(),
+                                script
+                        );
+                    }
+                }
+            }
+        }
+
+        return "Pipeline executed successfully";
     }
 }
-

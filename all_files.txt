@@ -807,6 +807,11 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.55</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
@@ -818,6 +823,11 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
@@ -940,6 +950,9 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b714dd14-f8ea-4a91-b1df-794aed1d46cd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/BundleController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/executor/SSHExecutor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" afterDir="false" />
@@ -959,11 +972,34 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <change beforePath="$PROJECT_DIR$/../demo4/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../demo4/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/src/main/java/com/example/demo4/controller/controller.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/all_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/all_files.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/SecretController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/SecretController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/TaskController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddBundleToPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddBundleToPipeline.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddGetSecret.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddGetSecret.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddPipeline.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddSecretsToPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddSecretsToPipeline.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddTask.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/BundleWithPipeline.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/CreateBundle.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/CreateBundle.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/PublicKeyWithPipeline.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/SecretWithPipeline.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/SetPublicPrivateKey.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/SetPublicPrivateKey.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/TaskWithPipeline.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Bundle.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Bundle.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Commands.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Commands.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Pipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Pipeline.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Secret.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Secret.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Task.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/repository/PipelineRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/repository/PipelineRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/SecretService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/SecretService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/TaskService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1063,7 +1099,7 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <workItem from="1775153039289" duration="272000" />
       <workItem from="1776074402563" duration="2484000" />
       <workItem from="1776166863560" duration="8283000" />
-      <workItem from="1776242443514" duration="2307000" />
+      <workItem from="1776242443514" duration="4792000" />
     </task>
     <servers />
   </component>
@@ -1097,10 +1133,89 @@ public class JenkinsXApplication {
 
 
 
+===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\BundleController.java =====
+package com.example.jenkinsx.controller;
+
+import com.example.jenkinsx.dto.AddBundleToUser;
+import com.example.jenkinsx.dto.CreateBundle;
+import com.example.jenkinsx.entity.Bundle;
+import com.example.jenkinsx.service.BundleService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/bundle")
+@CrossOrigin("*")
+public class BundleController {
+
+    private final BundleService bundleService;
+
+    public BundleController(BundleService bundleService) {
+        this.bundleService = bundleService;
+    }
+
+    @PostMapping("/create")
+    public List<Bundle> create(@RequestBody CreateBundle dto) {
+        return bundleService.createBundle(dto);
+    }
+
+    @PostMapping("/add-to-user")
+    public List<Bundle> addToUser(@RequestBody AddBundleToUser dto) {
+        return bundleService.addBundleToUser(dto);
+    }
+}
+
+
+
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\PipelineController.java =====
 package com.example.jenkinsx.controller;
 
+import com.example.jenkinsx.dto.*;
+import com.example.jenkinsx.entity.Pipeline;
+import com.example.jenkinsx.service.PipelineService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/pipeline")
+@CrossOrigin("*")
 public class PipelineController {
+
+    private final PipelineService pipelineService;
+
+    public PipelineController(PipelineService pipelineService) {
+        this.pipelineService = pipelineService;
+    }
+
+    @PostMapping("/create")
+    public Pipeline create(@RequestBody AddPipeline dto) {
+        return pipelineService.addPipeline(dto);
+    }
+
+    @PostMapping("/bundle")
+    public Pipeline addBundle(@RequestBody AddBundleToPipeline dto) {
+        return pipelineService.addBundle(dto);
+    }
+
+    @PostMapping("/tasks")
+    public Pipeline addTasks(@RequestBody AddTasksToPipeline dto) {
+        return pipelineService.addTasks(dto);
+    }
+
+    @PostMapping("/secrets")
+    public Pipeline addSecrets(@RequestBody AddSecretsToPipeline dto) {
+        return pipelineService.addSecrets(dto);
+    }
+
+    @PostMapping("/keys")
+    public Pipeline setKeys(@RequestBody SetPublicPrivateKey dto) {
+        return pipelineService.setKeys(dto);
+    }
+
+    @PostMapping("/execute/{id}")
+    public String execute(@PathVariable Long id) {
+        return pipelineService.executePipeline(id);
+    }
 }
 
 
@@ -1108,17 +1223,58 @@ public class PipelineController {
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\SecretController.java =====
 package com.example.jenkinsx.controller;
 
-public class SecretController {
-}
+import com.example.jenkinsx.dto.AddGetSecret;
+import com.example.jenkinsx.entity.Secret;
+import com.example.jenkinsx.service.SecretService;
+import org.springframework.web.bind.annotation.*;
 
+@RestController
+@RequestMapping("/api/secret")
+@CrossOrigin("*")
+public class SecretController {
+
+    private final SecretService secretService;
+
+    public SecretController(SecretService secretService) {
+        this.secretService = secretService;
+    }
+
+    @PostMapping("/create")
+    public Secret create(@RequestBody AddGetSecret dto) {
+        return secretService.addSecret(dto);
+    }
+
+    @GetMapping("/{id}")
+    public Secret get(@PathVariable Long id) {
+        return secretService.getSecret(id);
+    }
+}
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\TaskController.java =====
 package com.example.jenkinsx.controller;
 
-public class TaskController {
-}
+import com.example.jenkinsx.dto.AddTask;
+import com.example.jenkinsx.entity.Task;
+import com.example.jenkinsx.service.TaskService;
+import org.springframework.web.bind.annotation.*;
 
+@RestController
+@RequestMapping("/api/task")
+@CrossOrigin("*")
+public class TaskController {
+
+    private final TaskService taskService;
+
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @PostMapping("/create")
+    public Task create(@RequestBody AddTask dto) {
+        return taskService.addTask(dto);
+    }
+}
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\UserController.java =====
@@ -1134,26 +1290,92 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/user")
+@CrossOrigin("*")
 public class UserController {
-    @Autowired
-    private UserService userService;
-    @GetMapping()
-    public List<User> getAllUsers(){
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping
+    public List<User> getAll() {
         return userService.getAllUsers();
     }
+
     @PostMapping("/register")
-    public String register(RegisterRequest register){
-        return userService.register(register);
-    }
-    @PostMapping("/login")
-    public String login(LoginRequest login){
-        return userService.login(login);
+    public String register(@RequestBody RegisterRequest dto) {
+        return userService.register(dto);
     }
 
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest dto) {
+        return userService.login(dto);
+    }
 }
 
+
+===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\WebhookController.java =====
+package com.example.jenkinsx.controller;
+
+import com.example.jenkinsx.entity.Pipeline;
+import com.example.jenkinsx.repository.PipelineRepository;
+import com.example.jenkinsx.service.PipelineService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/webhook")
+public class WebhookController {
+
+    private final PipelineRepository pipelineRepository;
+    private final PipelineService pipelineService;
+
+    public WebhookController(PipelineRepository pipelineRepository,
+                             PipelineService pipelineService) {
+        this.pipelineRepository = pipelineRepository;
+        this.pipelineService = pipelineService;
+    }
+
+    @PostMapping("/github")
+    public String githubWebhook(@RequestBody String payload,
+                                @RequestHeader(value = "X-GitHub-Event", required = false) String event) {
+
+        if (event == null || !event.equals("push")) {
+            return "Ignored";
+        }
+
+        String repoUrl = extractRepoUrl(payload);
+
+        if (repoUrl == null) return "No repo found";
+
+        List<Pipeline> pipelines = pipelineRepository.findByRepoUrl(repoUrl);
+
+        for (Pipeline p : pipelines) {
+            new Thread(() -> pipelineService.executePipeline(p.getId())).start();
+        }
+
+        return "Triggered pipelines: " + pipelines.size();
+    }
+
+    // simple parser (can improve later)
+    private String extractRepoUrl(String payload) {
+        try {
+            int index = payload.indexOf("\"clone_url\":\"");
+            if (index == -1) return null;
+
+            int start = index + 13;
+            int end = payload.indexOf("\"", start);
+
+            return payload.substring(start, end);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+}
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\AddBundleToPipeline.java =====
@@ -1169,7 +1391,6 @@ public class AddBundleToPipeline {
     private Long pipelineId;
     private List<Bundle> bundleList;
 }
-
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\AddBundleToUser.java =====
@@ -1193,8 +1414,8 @@ import lombok.Data;
 
 @Data
 public class AddGetSecret {
-    private String SecretName;
-    private String SecretContent;
+    private String secretName;
+    private String secretContent;
 }
 
 
@@ -1209,8 +1430,9 @@ public class AddPipeline {
     private String pipelineName;
     private String pipelineDescription;
     private Long userId;
-}
 
+    private String repoUrl;
+}
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\AddSecretsToPipeline.java =====
@@ -1226,7 +1448,6 @@ public class AddSecretsToPipeline {
     private Long pipelineId;
     private List<Secret> secretList;
 }
-
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\AddTask.java =====
@@ -1245,7 +1466,6 @@ public class AddTask {
 }
 
 
-
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\AddTasksToPipeline.java =====
 package com.example.jenkinsx.dto;
 
@@ -1262,31 +1482,6 @@ public class AddTasksToPipeline {
 
 
 
-===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\BundleWithPipeline.java =====
-package com.example.jenkinsx.dto;
-
-import com.example.jenkinsx.entity.Bundle;
-import lombok.Data;
-
-import java.util.List;
-
-@Data
-public class BundleWithPipeline {
-    private Long pipelineId;
-    private String pipelineName;
-    private String pipelineDescription;
-    private List<Bundle> bundleList;
-
-    public BundleWithPipeline(Long pipelineId, String pipelineName, String pipelineDescription, List<Bundle> ipAddressBundle) {
-        this.pipelineId = pipelineId;
-        this.pipelineName = pipelineName;
-        this.pipelineDescription = pipelineDescription;
-        this.bundleList = ipAddressBundle;
-    }
-}
-
-
-
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\CreateBundle.java =====
 package com.example.jenkinsx.dto;
 
@@ -1297,7 +1492,7 @@ import java.util.List;
 
 @Data
 public class CreateBundle {
-    private Long UserId;
+    private Long userId;
     private List<Bundle> bundleList;
 }
 
@@ -1316,23 +1511,6 @@ public class LoginRequest {
 
 
 
-===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\PublicKeyWithPipeline.java =====
-package com.example.jenkinsx.dto;
-
-import lombok.Data;
-
-@Data
-public class PublicKeyWithPipeline {
-    private Long pipelineId;
-    private String publicKey;
-    public PublicKeyWithPipeline(Long pipelineId, String publicKey){
-        this.pipelineId = pipelineId;
-        this.publicKey = publicKey;
-    }
-}
-
-
-
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\RegisterRequest.java =====
 package com.example.jenkinsx.dto;
 
@@ -1343,31 +1521,6 @@ public class RegisterRequest {
     private String username;
     private String email;
     private String password;
-}
-
-
-
-===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\SecretWithPipeline.java =====
-package com.example.jenkinsx.dto;
-
-import com.example.jenkinsx.entity.Bundle;
-import com.example.jenkinsx.entity.Secret;
-import lombok.Data;
-
-import java.util.List;
-
-@Data
-public class SecretWithPipeline {
-    private Long pipelineId;
-    private String pipelineName;
-    private String pipelineDescription;
-    private List<Secret> secretList;
-    public SecretWithPipeline(Long pipelineId, String pipelineName, String pipelineDescription, List<Secret> SecretList) {
-        this.pipelineId = pipelineId;
-        this.pipelineName = pipelineName;
-        this.pipelineDescription = pipelineDescription;
-        this.secretList = SecretList;
-    }
 }
 
 
@@ -1385,39 +1538,13 @@ public class SetPublicPrivateKey {
 }
 
 
-
-===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\dto\TaskWithPipeline.java =====
-package com.example.jenkinsx.dto;
-
-import com.example.jenkinsx.entity.Bundle;
-import com.example.jenkinsx.entity.Task;
-import lombok.Data;
-
-import java.util.List;
-
-@Data
-public class TaskWithPipeline {
-    private Long pipelineId;
-    private String pipelineName;
-    private String pipelineDescription;
-    private List<Task> tasksList;
-    public TaskWithPipeline(Long pipelineId, String pipelineName, String pipelineDescription, List<Task> TaskList) {
-        this.pipelineId = pipelineId;
-        this.pipelineName = pipelineName;
-        this.pipelineDescription = pipelineDescription;
-        this.tasksList = TaskList;
-    }
-}
-
-
-
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\Bundle.java =====
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Table(name = "bundles")
@@ -1427,26 +1554,28 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Bundle {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String user;
+
+    private String username;
+
     private String bundleName;
     private String bundleDescription;
-    //list of ipaddress
+
     @ElementCollection
     private List<String> ipAddresses;
 }
-
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\Commands.java =====
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Table(name = "commands")
@@ -1456,22 +1585,23 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Commands {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ElementCollection
     private List<String> commandList;
 }
-
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\Pipeline.java =====
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Table(name = "pipelines")
@@ -1481,42 +1611,44 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Pipeline {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String pipelineName;
     private String pipelineDescription;
-    //bundle of ipaddress named
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pipeline_id")
     private List<Bundle> ipAddressBundle;
-    //task list with names
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pipeline_id")
     private List<Task> tasksList;
-    //secret variables related to pipeline
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pipeline_id")
     private List<Secret> secretList;
+
     private String publicKey;
     private String privateKey;
+
+    @Column(length = 1000)
+    private String repoUrl;
+    private String webhookSecret;
 
     public Pipeline(String pipelineName, String pipelineDescription) {
         this.pipelineName = pipelineName;
         this.pipelineDescription = pipelineDescription;
     }
-
-    public void getIpAddressBundle(List<Bundle> bundleList) {
-        this.ipAddressBundle = bundleList;
-    }
-
 }
-
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\Secret.java =====
 package com.example.jenkinsx.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -1527,26 +1659,28 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Secret {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String SecretName;
-    private String SecretContent;
+
+    private String secretName;
+    private String secretContent;
 
     public Secret(String secretName, String secretContent) {
-        this.SecretName = secretName;
-        this.SecretContent = secretContent;
+        this.secretName = secretName;
+        this.secretContent = secretContent;
     }
 }
-
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\Task.java =====
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Table(name = "tasks")
@@ -1556,13 +1690,16 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Task {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String taskName;
     private String taskDescription;
-    //list of commands to be executed via pipeline
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "task_id")
     private List<Commands> commandsList;
 
     public Task(String taskName, String taskDescription, List<Commands> commandsList) {
@@ -1573,14 +1710,12 @@ public class Task {
 }
 
 
-
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\User.java =====
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.nio.channels.Pipe;
 import java.util.List;
 
 @Entity
@@ -1591,20 +1726,26 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String username;
     private String email;
     private String password;
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
     private List<Pipeline> pipelineList;
+
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
     private List<Bundle> ipaddressBundles;
 
     public User(String username, String email, String password) {
-        this.email = email;
         this.username = username;
+        this.email = email;
         this.password = password;
     }
 
@@ -1613,6 +1754,52 @@ public class User {
     }
 }
 
+
+===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\executor\SSHExecutor.java =====
+package com.example.jenkinsx.executor;
+
+import com.jcraft.jsch.*;
+
+public class SSHExecutor {
+
+    public static void executeSingleCommand(
+            String host,
+            String user,
+            String privateKey,
+            String command
+    ) {
+
+        try {
+            JSch jsch = new JSch();
+            jsch.addIdentity("key", privateKey.getBytes(), null, null);
+
+            Session session = jsch.getSession(user, host, 22);
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.connect();
+
+            ChannelExec channel = (ChannelExec) session.openChannel("exec");
+            channel.setCommand(command);
+
+            channel.connect();
+
+            while (!channel.isClosed()) {
+                Thread.sleep(100);
+            }
+
+            int exitStatus = channel.getExitStatus();
+
+            if (exitStatus != 0) {
+                throw new RuntimeException("Command failed on " + host);
+            }
+
+            channel.disconnect();
+            session.disconnect();
+
+        } catch (Exception e) {
+            throw new RuntimeException("SSH failed: " + e.getMessage());
+        }
+    }
+}
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\junkinx_info\entity.txt =====
@@ -1696,8 +1883,11 @@ import org.hibernate.boot.models.JpaAnnotations;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PipelineRepository extends JpaRepository<Pipeline, Long> {
+    List<Pipeline> findByRepoUrl(String repoUrl);
 }
 
 
@@ -1786,84 +1976,119 @@ import com.example.jenkinsx.dto.*;
 import com.example.jenkinsx.entity.*;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
+import com.example.jenkinsx.executor.SSHExecutor;
 import org.springframework.stereotype.Service;
 
-import java.nio.channels.Pipe;
-import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class PipelineService {
-    private PipelineRepository pipelineRepository;
-    private UserRepository userRepository;
-    public PipelineService(PipelineRepository pipelineRepository, UserRepository userRepository){
+
+    private final PipelineRepository pipelineRepository;
+    private final UserRepository userRepository;
+
+    public PipelineService(PipelineRepository pipelineRepository,
+                           UserRepository userRepository) {
         this.pipelineRepository = pipelineRepository;
         this.userRepository = userRepository;
     }
-    public Pipeline addPipeline(AddPipeline addPipeline) {
-        Pipeline pipeline = new Pipeline(addPipeline.getPipelineName(), addPipeline.getPipelineDescription());
-        User user = userRepository.findById(addPipeline.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
-        List<Pipeline> list = user.getPipelineList();
-        list.add(pipeline);
-        pipelineRepository.save(pipeline);
+
+
+    private String normalizeRepo(String url) {
+        if (url == null) return null;
+        return url.replace(".git", "").trim();
+    }
+
+    public Pipeline addPipeline(AddPipeline dto) {
+
+        User user = userRepository.findById(dto.getUserId()).orElseThrow();
+
+        Pipeline pipeline = new Pipeline(
+                dto.getPipelineName(),
+                dto.getPipelineDescription()
+        );
+
+        pipeline.setRepoUrl(normalizeRepo(dto.getRepoUrl()));
+
+        pipeline = pipelineRepository.save(pipeline);
+
+        if (user.getPipelineList() == null) {
+            user.setPipelineList(new ArrayList<>());
+        }
+
+        user.getPipelineList().add(pipeline);
+        userRepository.save(user);
+
         return pipeline;
     }
-    public BundleWithPipeline addBundleToPipeline(AddBundleToPipeline bundleToPipeline) {
-        Pipeline pipeline = pipelineRepository.findById(bundleToPipeline.getPipelineId()).orElseThrow(() -> new RuntimeException("Pipeline not found"));
-        pipeline.setIpAddressBundle(bundleToPipeline.getBundleList());
-        return new BundleWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getIpAddressBundle());
+
+    public Pipeline addBundle(AddBundleToPipeline dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setIpAddressBundle(dto.getBundleList());
+        return pipelineRepository.save(pipeline);
     }
-    public TaskWithPipeline addTasksWithPipeline(AddTasksToPipeline addTasksToPipeline){
-        Pipeline pipeline = pipelineRepository.findById(addTasksToPipeline.getPipelineId()).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        pipeline.setTasksList(addTasksToPipeline.getTaskList());
-        return new TaskWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getTasksList());
+
+    public Pipeline addTasks(AddTasksToPipeline dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setTasksList(dto.getTaskList());
+        return pipelineRepository.save(pipeline);
     }
-    public SecretWithPipeline addSecretsWithPipeline(AddSecretsToPipeline addSecretsToPipeline){
-        Pipeline pipeline = pipelineRepository.findById(addSecretsToPipeline.getPipelineId()).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        pipeline.setSecretList(addSecretsToPipeline.getSecretList());
-        return new SecretWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getSecretList());
+
+    public Pipeline addSecrets(AddSecretsToPipeline dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setSecretList(dto.getSecretList());
+        return pipelineRepository.save(pipeline);
     }
-    public String ExecutePipeline(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        //execute or push onto rabbitmq/any message queue
-        return "";
+
+    public Pipeline setKeys(SetPublicPrivateKey dto) {
+        Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId()).orElseThrow();
+        pipeline.setPublicKey(dto.getPublicKey());
+        pipeline.setPrivateKey(dto.getPrivateKey());
+        return pipelineRepository.save(pipeline);
     }
-    public PublicKeyWithPipeline setPublicPrivateKey(SetPublicPrivateKey setPublicPrivateKey){
-        Pipeline pipeline = pipelineRepository.findById(setPublicPrivateKey.getPipelineId()).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        pipeline.setPublicKey(setPublicPrivateKey.getPublicKey());
-        pipeline.setPrivateKey(setPublicPrivateKey.getPrivateKey());
-        return new PublicKeyWithPipeline(pipeline.getId(), pipeline.getPublicKey());
-    }
-    public String getPipelineName(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        return pipeline.getPipelineName();
-    }
-    public String getPipelineDescription(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()->new RuntimeException("Pipeline not found"));
-        return pipeline.getPipelineDescription();
-    }
-    public List<Bundle> getBundle(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getIpAddressBundle();
-    }
-    public List<Task>  getTask(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getTasksList();
-    }
-    public List<Secret> getSecret(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getSecretList();
-    }
-    public String getPrivateKey(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getPrivateKey();
-    }
-    public String getPublicKey(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        return pipeline.getPublicKey();
+
+    public String executePipeline(Long pipelineId) {
+
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow();
+
+        if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
+            throw new RuntimeException("Pipeline incomplete");
+        }
+
+        for (Bundle bundle : pipeline.getIpAddressBundle()) {
+
+            for (String ip : bundle.getIpAddresses()) {
+
+                String secretExports = "";
+
+                if (pipeline.getSecretList() != null) {
+                    for (Secret s : pipeline.getSecretList()) {
+                        secretExports += "export " + s.getSecretName() +
+                                "=" + s.getSecretContent() + " && ";
+                    }
+                }
+
+                for (Task task : pipeline.getTasksList()) {
+
+                    for (Commands cmd : task.getCommandsList()) {
+
+                        String script = secretExports +
+                                String.join(" && ", cmd.getCommandList());
+
+                        SSHExecutor.executeSingleCommand(
+                                ip,
+                                bundle.getUsername(),
+                                pipeline.getPrivateKey(),
+                                script
+                        );
+                    }
+                }
+            }
+        }
+
+        return "Pipeline executed successfully";
     }
 }
-
-
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\service\SecretService.java =====
@@ -1872,22 +2097,29 @@ package com.example.jenkinsx.service;
 import com.example.jenkinsx.dto.AddGetSecret;
 import com.example.jenkinsx.entity.Secret;
 import com.example.jenkinsx.repository.SecretRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class SecretService {
-    private SecretRepository secretRepository;
-    public SecretService(SecretRepository secretRepository){
+
+    private final SecretRepository secretRepository;
+
+    public SecretService(SecretRepository secretRepository) {
         this.secretRepository = secretRepository;
     }
-    public String AddSecret(AddGetSecret addSecret){
-        Secret secret = new Secret(addSecret.getSecretName(), addSecret.getSecretContent());
-        return "Secret created!";
+
+    public Secret addSecret(AddGetSecret dto) {
+
+        Secret secret = new Secret(
+                dto.getSecretName(),
+                dto.getSecretContent()
+        );
+
+        return secretRepository.save(secret);
     }
-    public AddGetSecret GetSecret(Long secretId){
-        Secret secret = secretRepository.findById(secretId).orElseThrow(()->new RuntimeException("Secret not found"));
-        AddGetSecret addGetSecret = new AddGetSecret();
-        addGetSecret.setSecretContent(secret.getSecretContent());
-        addGetSecret.setSecretName(secret.getSecretName());
-        return addGetSecret;
+
+    public Secret getSecret(Long id) {
+        return secretRepository.findById(id).orElseThrow();
     }
 }
 
@@ -1903,13 +2135,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TaskService {
-    private TaskRepository taskRepository;
-    public TaskService(TaskRepository taskRepository){
+
+    private final TaskRepository taskRepository;
+
+    public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
-    public String addTask(AddTask addTask){
-        Task task = new Task(addTask.getTaskName(), addTask.getTaskDescription(), addTask.getCommandsList());
-        return "Task added, TaskId: " + task.getId() + ", TaskName: " + task.getTaskName() + ", TaskDescription: " + task.getTaskDescription();
+
+    public Task addTask(AddTask dto) {
+
+        Task task = new Task(
+                dto.getTaskName(),
+                dto.getTaskDescription(),
+                dto.getCommandsList()
+        );
+
+        return taskRepository.save(task);
     }
 }
 
@@ -1926,38 +2167,54 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 @Service
 public class UserService {
-    private UserRepository userRepository;
-    public UserService(UserRepository userRepository){
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    public String register(RegisterRequest register){
-        if(userRepository.findByEmail(register.getEmail()).isPresent()){
-            return "Email already exists";
-        }
-        User user = new User(register.getUsername(), register.getEmail(), register.getPassword());
+
+    public String register(RegisterRequest dto) {
+
+        User user = new User(
+                dto.getUsername(),
+                dto.getEmail(),
+                dto.getPassword()
+        );
+
         userRepository.save(user);
-        return "User registered successfully";
+
+        return "User registered";
     }
-    public String login(LoginRequest login){
-        User user = userRepository.findByEmail(login.getEmail()).orElseThrow(()->new RuntimeException("User not found"));
-        if(!login.getPassword().equals(user.getPassword())){
-            return "Invalid password";
+
+    public String login(LoginRequest dto) {
+
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow();
+
+        if (!user.getPassword().equals(dto.getPassword())) {
+            throw new RuntimeException("Invalid password");
         }
-        return "login successful";
+
+        return "Login successful";
     }
-    public List<User> getAllUsers(){
+
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 }
 
 
-
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\resources\application.properties =====
 spring.application.name=jenkinsX
+spring.datasource.url=jdbc:postgresql://localhost:5432/jenkinsx
+spring.datasource.username=username
+spring.datasource.password=password
 
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\test\java\com\example\jenkinsx\JenkinsXApplicationTests.java =====

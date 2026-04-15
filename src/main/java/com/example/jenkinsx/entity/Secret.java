@@ -1,8 +1,6 @@
 package com.example.jenkinsx.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -13,13 +11,16 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Secret {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String SecretName;
-    private String SecretContent;
+
+    private String secretName;
+    private String secretContent;
 
     public Secret(String secretName, String secretContent) {
-        this.SecretName = secretName;
-        this.SecretContent = secretContent;
+        this.secretName = secretName;
+        this.secretContent = secretContent;
     }
 }

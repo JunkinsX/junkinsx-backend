@@ -8,29 +8,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 @Service
 public class UserService {
-    private UserRepository userRepository;
-    public UserService(UserRepository userRepository){
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    public String register(RegisterRequest register){
-        if(userRepository.findByEmail(register.getEmail()).isPresent()){
-            return "Email already exists";
-        }
-        User user = new User(register.getUsername(), register.getEmail(), register.getPassword());
+
+    public String register(RegisterRequest dto) {
+
+        User user = new User(
+                dto.getUsername(),
+                dto.getEmail(),
+                dto.getPassword()
+        );
+
         userRepository.save(user);
-        return "User registered successfully";
+
+        return "User registered";
     }
-    public String login(LoginRequest login){
-        User user = userRepository.findByEmail(login.getEmail()).orElseThrow(()->new RuntimeException("User not found"));
-        if(!login.getPassword().equals(user.getPassword())){
-            return "Invalid password";
+
+    public String login(LoginRequest dto) {
+
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow();
+
+        if (!user.getPassword().equals(dto.getPassword())) {
+            throw new RuntimeException("Invalid password");
         }
-        return "login successful";
+
+        return "Login successful";
     }
-    public List<User> getAllUsers(){
+
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 }

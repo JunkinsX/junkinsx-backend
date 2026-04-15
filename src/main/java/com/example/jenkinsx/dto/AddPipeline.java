@@ -7,4 +7,6 @@ public class AddPipeline {
     private String pipelineName;
     private String pipelineDescription;
     private Long userId;
+
+    private String repoUrl;
 }

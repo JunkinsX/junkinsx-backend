@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 public class CreateBundle {
-    private Long UserId;
+    private Long userId;
     private List<Bundle> bundleList;
 }

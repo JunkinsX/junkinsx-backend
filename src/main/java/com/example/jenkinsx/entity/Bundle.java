@@ -1,9 +1,9 @@
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Table(name = "bundles")
@@ -13,13 +13,16 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Bundle {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String user;
+
+    private String username;
+
     private String bundleName;
     private String bundleDescription;
-    //list of ipaddress
+
     @ElementCollection
     private List<String> ipAddresses;
 }

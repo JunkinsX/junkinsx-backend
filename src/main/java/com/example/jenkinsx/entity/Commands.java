@@ -1,9 +1,9 @@
 package com.example.jenkinsx.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
-import lombok.*;
 
 @Entity
 @Table(name = "commands")
@@ -13,9 +13,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Commands {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ElementCollection
     private List<String> commandList;
 }

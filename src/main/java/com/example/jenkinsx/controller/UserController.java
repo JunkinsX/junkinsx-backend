@@ -10,22 +10,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/user")
+@CrossOrigin("*")
 public class UserController {
-    @Autowired
-    private UserService userService;
-    @GetMapping()
-    public List<User> getAllUsers(){
-        return userService.getAllUsers();
-    }
-    @PostMapping("/register")
-    public String register(RegisterRequest register){
-        return userService.register(register);
-    }
-    @PostMapping("/login")
-    public String login(LoginRequest login){
-        return userService.login(login);
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
+    @GetMapping
+    public List<User> getAll() {
+        return userService.getAllUsers();
+    }
+
+    @PostMapping("/register")
+    public String register(@RequestBody RegisterRequest dto) {
+        return userService.register(dto);
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest dto) {
+        return userService.login(dto);
+    }
 }

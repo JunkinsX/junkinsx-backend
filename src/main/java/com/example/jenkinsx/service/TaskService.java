@@ -7,12 +7,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TaskService {
-    private TaskRepository taskRepository;
-    public TaskService(TaskRepository taskRepository){
+
+    private final TaskRepository taskRepository;
+
+    public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
-    public String addTask(AddTask addTask){
-        Task task = new Task(addTask.getTaskName(), addTask.getTaskDescription(), addTask.getCommandsList());
-        return "Task added, TaskId: " + task.getId() + ", TaskName: " + task.getTaskName() + ", TaskDescription: " + task.getTaskDescription();
+
+    public Task addTask(AddTask dto) {
+
+        Task task = new Task(
+                dto.getTaskName(),
+                dto.getTaskDescription(),
+                dto.getCommandsList()
+        );
+
+        return taskRepository.save(task);
     }
 }
