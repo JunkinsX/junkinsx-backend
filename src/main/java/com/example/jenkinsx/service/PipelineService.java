@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class PipelineService {
@@ -133,5 +134,9 @@ public class PipelineService {
     @Async
     public void runPipelineAsync(Long id) {
         executePipeline(id);
+    }
+    public List<Pipeline> getAllPipeline(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        return user.getPipelineList();
     }
 }

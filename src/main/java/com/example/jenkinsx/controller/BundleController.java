@@ -28,4 +28,8 @@ public class BundleController {
     public List<Bundle> addToUser(@RequestBody AddBundleToUser dto) {
         return bundleService.addBundleToUser(dto);
     }
+    @GetMapping
+    public List<Bundle> GetBundle(@RequestParam Long userId){
+        return bundleService.getBundle(userId);
+    }
 }

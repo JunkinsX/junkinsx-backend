@@ -28,4 +28,8 @@ public class BundleService {
         user.addBundle(addBundleToUser.getBundle());
         return user.getIpaddressBundles();
     }
+    public List<Bundle> getBundle(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        return user.getIpaddressBundles();
+    }
 }

@@ -5,6 +5,8 @@ import com.example.jenkinsx.entity.Pipeline;
 import com.example.jenkinsx.service.PipelineService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/pipeline")
 @CrossOrigin("*")
@@ -45,4 +47,9 @@ public class PipelineController {
     public String execute(@PathVariable Long id) {
         return pipelineService.executePipeline(id);
     }
+    @GetMapping()
+    public List<Pipeline> GetAllPipeline(@RequestParam Long userId){
+        return pipelineService.getAllPipeline(userId);
+    }
 }
+

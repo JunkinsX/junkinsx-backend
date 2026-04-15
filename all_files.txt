@@ -954,6 +954,9 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b714dd14-f8ea-4a91-b1df-794aed1d46cd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineLogController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/PipelineLog.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/repository/PipelineLogRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" afterDir="false" />
@@ -972,7 +975,8 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <change beforePath="$PROJECT_DIR$/../demo1/src/main/java/com/example/demo/controller/DemoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../demo1/src/main/java/com/example/demo/controller/DemoController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../demo4/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/src/main/java/com/example/demo4/controller/controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/executor/SSHExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/executor/SSHExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1072,7 +1076,7 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <workItem from="1775153039289" duration="272000" />
       <workItem from="1776074402563" duration="2484000" />
       <workItem from="1776166863560" duration="8283000" />
-      <workItem from="1776242443514" duration="5433000" />
+      <workItem from="1776242443514" duration="5716000" />
     </task>
     <servers />
   </component>
@@ -1194,6 +1198,33 @@ public class PipelineController {
     }
 }
 
+
+
+===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\PipelineLogController.java =====
+package com.example.jenkinsx.controller;
+
+import com.example.jenkinsx.entity.PipelineLog;
+import com.example.jenkinsx.repository.PipelineLogRepository;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/logs")
+@CrossOrigin("*")
+public class PipelineLogController {
+
+    private final PipelineLogRepository logRepository;
+
+    public PipelineLogController(PipelineLogRepository logRepository) {
+        this.logRepository = logRepository;
+    }
+
+    @GetMapping("/{pipelineId}")
+    public List<PipelineLog> getLogs(@PathVariable Long pipelineId) {
+        return logRepository.findByPipelineId(pipelineId);
+    }
+}
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\controller\SecretController.java =====
@@ -1622,6 +1653,34 @@ public class Pipeline {
 }
 
 
+===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\PipelineLog.java =====
+package com.example.jenkinsx.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "pipeline_logs")
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class PipelineLog {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long pipelineId;
+
+    @Column(columnDefinition = "TEXT")
+    private String output;
+
+    private String status; // SUCCESS / FAILED
+}
+
+
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\entity\Secret.java =====
 package com.example.jenkinsx.entity;
 
@@ -1739,12 +1798,14 @@ import com.jcraft.jsch.*;
 
 public class SSHExecutor {
 
-    public static void executeSingleCommand(
+    public static String executeSingleCommand(
             String host,
             String user,
             String privateKey,
             String command
     ) {
+
+        StringBuilder output = new StringBuilder();
 
         try {
             JSch jsch = new JSch();
@@ -1757,23 +1818,31 @@ public class SSHExecutor {
             ChannelExec channel = (ChannelExec) session.openChannel("exec");
             channel.setCommand(command);
 
+            channel.setInputStream(null);
+            java.io.InputStream in = channel.getInputStream();
+
             channel.connect();
 
-            while (!channel.isClosed()) {
+            byte[] buffer = new byte[1024];
+
+            while (true) {
+                while (in.available() > 0) {
+                    int i = in.read(buffer, 0, 1024);
+                    if (i < 0) break;
+                    output.append(new String(buffer, 0, i));
+                }
+
+                if (channel.isClosed()) break;
                 Thread.sleep(100);
-            }
-
-            int exitStatus = channel.getExitStatus();
-
-            if (exitStatus != 0) {
-                throw new RuntimeException("Command failed on " + host);
             }
 
             channel.disconnect();
             session.disconnect();
 
+            return output.toString();
+
         } catch (Exception e) {
-            throw new RuntimeException("SSH failed: " + e.getMessage());
+            return "ERROR: " + e.getMessage();
         }
     }
 }
@@ -1850,6 +1919,20 @@ import org.springframework.stereotype.Repository;
 public interface CommandsRepository extends JpaRepository<Commands, Long> {
 }
 
+
+
+===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\repository\PipelineLogRepository.java =====
+package com.example.jenkinsx.repository;
+
+import com.example.jenkinsx.entity.PipelineLog;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface PipelineLogRepository extends JpaRepository<PipelineLog, Long> {
+
+    List<PipelineLog> findByPipelineId(Long pipelineId);
+}
 
 
 ===== C:\Projects\Ansible_server\jenkinsX\src\main\java\com\example\jenkinsx\repository\PipelineRepository.java =====
@@ -1951,6 +2034,7 @@ package com.example.jenkinsx.service;
 
 import com.example.jenkinsx.dto.*;
 import com.example.jenkinsx.entity.*;
+import com.example.jenkinsx.repository.PipelineLogRepository;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
 import com.example.jenkinsx.executor.SSHExecutor;
@@ -1964,11 +2048,13 @@ public class PipelineService {
 
     private final PipelineRepository pipelineRepository;
     private final UserRepository userRepository;
+    private final PipelineLogRepository logRepository;
 
     public PipelineService(PipelineRepository pipelineRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, PipelineLogRepository pipelineLogRepository) {
         this.pipelineRepository = pipelineRepository;
         this.userRepository = userRepository;
+        this.logRepository = pipelineLogRepository;
     }
 
 
@@ -2043,15 +2129,26 @@ public class PipelineService {
                         }
                     }
                     for (Task task : pipeline.getTasksList()) {
+
                         for (Commands cmd : task.getCommandsList()) {
+
                             String script = secretExports +
                                     String.join(" && ", cmd.getCommandList());
-                            SSHExecutor.executeSingleCommand(
+
+                            String result = SSHExecutor.executeSingleCommand(
                                     ip,
                                     bundle.getUsername(),
                                     pipeline.getPrivateKey(),
                                     script
                             );
+
+                            PipelineLog log = PipelineLog.builder()
+                                    .pipelineId(pipeline.getId())
+                                    .output(result)
+                                    .status(result.contains("ERROR") ? "FAILED" : "SUCCESS")
+                                    .build();
+
+                            logRepository.save(log);
                         }
                     }
                 }
