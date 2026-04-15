@@ -20,7 +20,9 @@ public class User {
     private String username;
     private String email;
     private String password;
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Pipeline> pipelineList;
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Bundle> ipaddressBundles;
 
     public User(String username, String email, String password) {

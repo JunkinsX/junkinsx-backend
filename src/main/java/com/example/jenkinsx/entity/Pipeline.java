@@ -19,10 +19,13 @@ public class Pipeline {
     private String pipelineName;
     private String pipelineDescription;
     //bundle of ipaddress named
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Bundle> ipAddressBundle;
     //task list with names
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Task> tasksList;
     //secret variables related to pipeline
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Secret> secretList;
     private String publicKey;
     private String privateKey;

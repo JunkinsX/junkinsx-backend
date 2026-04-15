@@ -16,8 +16,10 @@ public class Bundle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String user;
     private String bundleName;
     private String bundleDescription;
     //list of ipaddress
+    @ElementCollection
     private List<String> ipAddresses;
 }

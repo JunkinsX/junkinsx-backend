@@ -19,6 +19,7 @@ public class Task {
     private String taskName;
     private String taskDescription;
     //list of commands to be executed via pipeline
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Commands> commandsList;
 
     public Task(String taskName, String taskDescription, List<Commands> commandsList) {
