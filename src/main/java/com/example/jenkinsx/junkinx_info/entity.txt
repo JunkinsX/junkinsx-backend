@@ -4,3 +4,39 @@ task - long id, string task name, string task description, list<commands> comman
 bundle - long id, string bundle name, string bundle description
 command - long id, list<string> commandList
 secret - long id, string secret name, string secret content
+///
+lets stick to rest sync not message queue async
+***
+pipeline service:
+Pipeline addPipeline(AddPipeline)
+BundleWithPipeline addBundleWithPipeline(AddBundleToPipeline)
+TaskWithPipeline addTasksWithPipeline(AddTasksToPipeline)
+SecretWithPipeline addSecretsWithPipeline(AddSecretsToPipeline)
+--- ExecutePipeline(pipelineId)
+PublicKeyWithPipeline setPublicPrivateKey(SetPublicPrivateKey)
+String getPipelineName(pipelineId)
+String getPipelineDescription(pipelineId)
+List<Bundle> getBundle(pipelineId)
+List<Task> getTask(pipelineId)
+List<Secret> getSecret(pipelineId)
+String getPublicKey(pipelineId)
+String getPrivateKey(pipelineId)
+***
+***
+secret service:
+String addSecret(AddGetSecret)
+AddGetSecret getSecret(secretId)
+***
+***
+task service:
+String addTask(AddTask)
+***
+user service:
+String register(RegisterRequest)
+String login(LoginRequest)
+***
+***
+bundle service:
+List<Bundle> createBundle(CreateBundle)
+List<Bundle> addBundleToUser(AddBundleToUser)
+***

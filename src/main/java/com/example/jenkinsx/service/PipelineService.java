@@ -30,12 +30,12 @@ public class PipelineService {
         pipeline.setIpAddressBundle(bundleToPipeline.getBundleList());
         return new BundleWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getIpAddressBundle());
     }
-    public TaskWithPipeline addTasksToPipeline(AddTasksToPipeline addTasksToPipeline){
+    public TaskWithPipeline addTasksWithPipeline(AddTasksToPipeline addTasksToPipeline){
         Pipeline pipeline = pipelineRepository.findById(addTasksToPipeline.getPipelineId()).orElseThrow(()->new RuntimeException("Pipeline not found"));
         pipeline.setTasksList(addTasksToPipeline.getTaskList());
         return new TaskWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getTasksList());
     }
-    public SecretWithPipeline addSecretsToPipeline(AddSecretsToPipeline addSecretsToPipeline){
+    public SecretWithPipeline addSecretsWithPipeline(AddSecretsToPipeline addSecretsToPipeline){
         Pipeline pipeline = pipelineRepository.findById(addSecretsToPipeline.getPipelineId()).orElseThrow(()->new RuntimeException("Pipeline not found"));
         pipeline.setSecretList(addSecretsToPipeline.getSecretList());
         return new SecretWithPipeline(pipeline.getId(), pipeline.getPipelineName(), pipeline.getPipelineDescription(), pipeline.getSecretList());
@@ -45,10 +45,19 @@ public class PipelineService {
         //execute or push onto rabbitmq/any message queue
         return "";
     }
-    public String SetPublicPrivateKey(Long pipelineId){
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
-        //execute script or process to create a publickey, privatekey and save onto db
-        return "";
+    public PublicKeyWithPipeline setPublicPrivateKey(SetPublicPrivateKey setPublicPrivateKey){
+        Pipeline pipeline = pipelineRepository.findById(setPublicPrivateKey.getPipelineId()).orElseThrow(()-> new RuntimeException("Pipeline not found"));
+        pipeline.setPublicKey(setPublicPrivateKey.getPublicKey());
+        pipeline.setPrivateKey(setPublicPrivateKey.getPrivateKey());
+        return new PublicKeyWithPipeline(pipeline.getId(), pipeline.getPublicKey());
+    }
+    public String getPipelineName(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()->new RuntimeException("Pipeline not found"));
+        return pipeline.getPipelineName();
+    }
+    public String getPipelineDescription(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()->new RuntimeException("Pipeline not found"));
+        return pipeline.getPipelineDescription();
     }
     public List<Bundle> getBundle(Long pipelineId){
         Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
@@ -62,10 +71,13 @@ public class PipelineService {
         Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
         return pipeline.getSecretList();
     }
+    public String getPrivateKey(Long pipelineId){
+        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
+        return pipeline.getPrivateKey();
+    }
     public String getPublicKey(Long pipelineId){
         Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(()-> new RuntimeException("Pipeline not found"));
         return pipeline.getPublicKey();
     }
-
 }
 

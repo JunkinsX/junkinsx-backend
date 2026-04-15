@@ -28,4 +28,8 @@ public class User {
         this.username = username;
         this.password = password;
     }
+
+    public void addBundle(Bundle bundle) {
+        ipaddressBundles.add(bundle);
+    }
 }
