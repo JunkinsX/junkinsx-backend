@@ -816,6 +816,10 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
@@ -950,9 +954,6 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b714dd14-f8ea-4a91-b1df-794aed1d46cd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/BundleController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/executor/SSHExecutor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_qnx.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/scripts/run_verilog.sh" afterDir="false" />
@@ -972,34 +973,10 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <change beforePath="$PROJECT_DIR$/../demo4/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../demo4/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../demo4/src/main/java/com/example/demo4/controller/controller.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/all_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/all_files.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/PipelineController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/SecretController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/SecretController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/TaskController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddBundleToPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddBundleToPipeline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddGetSecret.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddGetSecret.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddPipeline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddSecretsToPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddSecretsToPipeline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/AddTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/BundleWithPipeline.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/CreateBundle.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/CreateBundle.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/PublicKeyWithPipeline.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/SecretWithPipeline.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/SetPublicPrivateKey.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/SetPublicPrivateKey.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/dto/TaskWithPipeline.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Bundle.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Bundle.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Commands.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Commands.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/JenkinsXApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/JenkinsXApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/controller/WebhookController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Pipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Pipeline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Secret.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Secret.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/entity/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/repository/PipelineRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/repository/PipelineRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/PipelineService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/SecretService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/SecretService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/TaskService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jenkinsx/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1099,7 +1076,7 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
       <workItem from="1775153039289" duration="272000" />
       <workItem from="1776074402563" duration="2484000" />
       <workItem from="1776166863560" duration="8283000" />
-      <workItem from="1776242443514" duration="4792000" />
+      <workItem from="1776242443514" duration="5286000" />
     </task>
     <servers />
   </component>
@@ -1121,12 +1098,15 @@ package com.example.jenkinsx;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
+@EnableAsync
 @SpringBootApplication
 public class JenkinsXApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(JenkinsXApplication.class, args);
+
     }
 
 }
@@ -1323,6 +1303,8 @@ package com.example.jenkinsx.controller;
 import com.example.jenkinsx.entity.Pipeline;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.service.PipelineService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -1344,36 +1326,40 @@ public class WebhookController {
     public String githubWebhook(@RequestBody String payload,
                                 @RequestHeader(value = "X-GitHub-Event", required = false) String event) {
 
-        if (event == null || !event.equals("push")) {
-            return "Ignored";
+        try {
+            if (event == null || !event.equals("push")) {
+                return "Ignored event: " + event;
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(payload);
+            String repoUrl = root.path("repository").path("clone_url").asText();
+            String ref = root.path("ref").asText();
+            if (repoUrl == null || repoUrl.isEmpty()) {
+                return "No repo found";
+            }
+            repoUrl = normalizeRepo(repoUrl);
+            String branch = ref.replace("refs/heads/", "");
+            System.out.println("Repo: " + repoUrl);
+            System.out.println("Branch: " + branch);
+            List<Pipeline> pipelines = pipelineRepository.findByRepoUrl(repoUrl);
+            for (Pipeline p : pipelines) {
+                new Thread(() -> {
+                    try {
+                        pipelineService.runPipelineAsync(p.getId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
+            return "Triggered pipelines: " + pipelines.size();
+        } catch (Exception e) {
+            return "Webhook error: " + e.getMessage();
         }
-
-        String repoUrl = extractRepoUrl(payload);
-
-        if (repoUrl == null) return "No repo found";
-
-        List<Pipeline> pipelines = pipelineRepository.findByRepoUrl(repoUrl);
-
-        for (Pipeline p : pipelines) {
-            new Thread(() -> pipelineService.executePipeline(p.getId())).start();
-        }
-
-        return "Triggered pipelines: " + pipelines.size();
     }
 
-    // simple parser (can improve later)
-    private String extractRepoUrl(String payload) {
-        try {
-            int index = payload.indexOf("\"clone_url\":\"");
-            if (index == -1) return null;
-
-            int start = index + 13;
-            int end = payload.indexOf("\"", start);
-
-            return payload.substring(start, end);
-        } catch (Exception e) {
-            return null;
-        }
+    private String normalizeRepo(String url) {
+        if (url == null) return null;
+        return url.replace(".git", "").trim();
     }
 }
 
@@ -1637,6 +1623,7 @@ public class Pipeline {
     @Column(length = 1000)
     private String repoUrl;
     private String webhookSecret;
+    private String status;
 
     public Pipeline(String pipelineName, String pipelineDescription) {
         this.pipelineName = pipelineName;
@@ -1977,6 +1964,7 @@ import com.example.jenkinsx.entity.*;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
 import com.example.jenkinsx.executor.SSHExecutor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -2048,45 +2036,48 @@ public class PipelineService {
     }
 
     public String executePipeline(Long pipelineId) {
-
         Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow();
-
-        if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
-            throw new RuntimeException("Pipeline incomplete");
-        }
-
-        for (Bundle bundle : pipeline.getIpAddressBundle()) {
-
-            for (String ip : bundle.getIpAddresses()) {
-
-                String secretExports = "";
-
-                if (pipeline.getSecretList() != null) {
-                    for (Secret s : pipeline.getSecretList()) {
-                        secretExports += "export " + s.getSecretName() +
-                                "=" + s.getSecretContent() + " && ";
+        pipeline.setStatus("RUNNING");
+        pipelineRepository.save(pipeline);
+        try {
+            if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
+                throw new RuntimeException("Pipeline incomplete");
+            }
+            for (Bundle bundle : pipeline.getIpAddressBundle()) {
+                for (String ip : bundle.getIpAddresses()) {
+                    String secretExports = "";
+                    if (pipeline.getSecretList() != null) {
+                        for (Secret s : pipeline.getSecretList()) {
+                            secretExports += "export " + s.getSecretName() +
+                                    "=" + s.getSecretContent() + " && ";
+                        }
                     }
-                }
-
-                for (Task task : pipeline.getTasksList()) {
-
-                    for (Commands cmd : task.getCommandsList()) {
-
-                        String script = secretExports +
-                                String.join(" && ", cmd.getCommandList());
-
-                        SSHExecutor.executeSingleCommand(
-                                ip,
-                                bundle.getUsername(),
-                                pipeline.getPrivateKey(),
-                                script
-                        );
+                    for (Task task : pipeline.getTasksList()) {
+                        for (Commands cmd : task.getCommandsList()) {
+                            String script = secretExports +
+                                    String.join(" && ", cmd.getCommandList());
+                            SSHExecutor.executeSingleCommand(
+                                    ip,
+                                    bundle.getUsername(),
+                                    pipeline.getPrivateKey(),
+                                    script
+                            );
+                        }
                     }
                 }
             }
-        }
+            pipeline.setStatus("SUCCESS");
 
-        return "Pipeline executed successfully";
+        } catch (Exception e) {
+            pipeline.setStatus("FAILED");
+            System.out.println("Pipeline failed: " + e.getMessage());
+        }
+        pipelineRepository.save(pipeline);
+        return "Pipeline execution finished";
+    }
+    @Async
+    public void runPipelineAsync(Long id) {
+        executePipeline(id);
     }
 }
 

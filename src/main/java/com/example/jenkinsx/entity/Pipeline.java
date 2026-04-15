@@ -39,6 +39,7 @@ public class Pipeline {
     @Column(length = 1000)
     private String repoUrl;
     private String webhookSecret;
+    private String status;
 
     public Pipeline(String pipelineName, String pipelineDescription) {
         this.pipelineName = pipelineName;

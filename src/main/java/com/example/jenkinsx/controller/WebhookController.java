@@ -27,45 +27,31 @@ public class WebhookController {
                                 @RequestHeader(value = "X-GitHub-Event", required = false) String event) {
 
         try {
-
-            // ✅ Only push events
             if (event == null || !event.equals("push")) {
                 return "Ignored event: " + event;
             }
-
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(payload);
-
-            // ✅ Safe extraction
             String repoUrl = root.path("repository").path("clone_url").asText();
             String ref = root.path("ref").asText();
-
             if (repoUrl == null || repoUrl.isEmpty()) {
                 return "No repo found";
             }
-
             repoUrl = normalizeRepo(repoUrl);
-
             String branch = ref.replace("refs/heads/", "");
-
             System.out.println("Repo: " + repoUrl);
             System.out.println("Branch: " + branch);
-
             List<Pipeline> pipelines = pipelineRepository.findByRepoUrl(repoUrl);
-
             for (Pipeline p : pipelines) {
-
                 new Thread(() -> {
                     try {
-                        pipelineService.executePipeline(p.getId());
+                        pipelineService.runPipelineAsync(p.getId());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }).start();
             }
-
             return "Triggered pipelines: " + pipelines.size();
-
         } catch (Exception e) {
             return "Webhook error: " + e.getMessage();
         }

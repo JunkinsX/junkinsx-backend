@@ -5,6 +5,7 @@ import com.example.jenkinsx.entity.*;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
 import com.example.jenkinsx.executor.SSHExecutor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -76,44 +77,47 @@ public class PipelineService {
     }
 
     public String executePipeline(Long pipelineId) {
-
         Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow();
-
-        if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
-            throw new RuntimeException("Pipeline incomplete");
-        }
-
-        for (Bundle bundle : pipeline.getIpAddressBundle()) {
-
-            for (String ip : bundle.getIpAddresses()) {
-
-                String secretExports = "";
-
-                if (pipeline.getSecretList() != null) {
-                    for (Secret s : pipeline.getSecretList()) {
-                        secretExports += "export " + s.getSecretName() +
-                                "=" + s.getSecretContent() + " && ";
+        pipeline.setStatus("RUNNING");
+        pipelineRepository.save(pipeline);
+        try {
+            if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
+                throw new RuntimeException("Pipeline incomplete");
+            }
+            for (Bundle bundle : pipeline.getIpAddressBundle()) {
+                for (String ip : bundle.getIpAddresses()) {
+                    String secretExports = "";
+                    if (pipeline.getSecretList() != null) {
+                        for (Secret s : pipeline.getSecretList()) {
+                            secretExports += "export " + s.getSecretName() +
+                                    "=" + s.getSecretContent() + " && ";
+                        }
                     }
-                }
-
-                for (Task task : pipeline.getTasksList()) {
-
-                    for (Commands cmd : task.getCommandsList()) {
-
-                        String script = secretExports +
-                                String.join(" && ", cmd.getCommandList());
-
-                        SSHExecutor.executeSingleCommand(
-                                ip,
-                                bundle.getUsername(),
-                                pipeline.getPrivateKey(),
-                                script
-                        );
+                    for (Task task : pipeline.getTasksList()) {
+                        for (Commands cmd : task.getCommandsList()) {
+                            String script = secretExports +
+                                    String.join(" && ", cmd.getCommandList());
+                            SSHExecutor.executeSingleCommand(
+                                    ip,
+                                    bundle.getUsername(),
+                                    pipeline.getPrivateKey(),
+                                    script
+                            );
+                        }
                     }
                 }
             }
-        }
+            pipeline.setStatus("SUCCESS");
 
-        return "Pipeline executed successfully";
+        } catch (Exception e) {
+            pipeline.setStatus("FAILED");
+            System.out.println("Pipeline failed: " + e.getMessage());
+        }
+        pipelineRepository.save(pipeline);
+        return "Pipeline execution finished";
+    }
+    @Async
+    public void runPipelineAsync(Long id) {
+        executePipeline(id);
     }
 }
