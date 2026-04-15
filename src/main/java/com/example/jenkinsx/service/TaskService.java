@@ -15,5 +15,4 @@ public class TaskService {
         Task task = new Task(addTask.getTaskName(), addTask.getTaskDescription(), addTask.getCommandsList());
         return "Task added, TaskId: " + task.getId() + ", TaskName: " + task.getTaskName() + ", TaskDescription: " + task.getTaskDescription();
     }
-
 }

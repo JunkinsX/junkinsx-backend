@@ -22,6 +22,7 @@ public class PipelineService {
         User user = userRepository.findById(addPipeline.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         List<Pipeline> list = user.getPipelineList();
         list.add(pipeline);
+        pipelineRepository.save(pipeline);
         return pipeline;
     }
     public BundleWithPipeline addBundleToPipeline(AddBundleToPipeline bundleToPipeline) {
