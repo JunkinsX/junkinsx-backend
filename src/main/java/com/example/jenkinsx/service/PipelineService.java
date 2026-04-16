@@ -214,6 +214,12 @@ public class PipelineService {
                                     // Use sudo -n (non-interactive) to catch nopasswd issues early
                                     String waitScript = "export DEBIAN_FRONTEND=noninteractive && while sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for other apt process...'; sleep 2; done";
                                     substitutedCommands.add(waitScript);
+                                    
+                                    // Auto-inject apt update if they forgot it before an install command
+                                    if (proc.contains("install")) {
+                                        substitutedCommands.add("sudo -n DEBIAN_FRONTEND=noninteractive apt-get update -y");
+                                    }
+
                                     // Ensure the actual apt command also uses -n if it starts with sudo
                                     if (proc.startsWith("sudo ")) {
                                         proc = "sudo -n DEBIAN_FRONTEND=noninteractive " + proc.substring(5);
