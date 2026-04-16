@@ -245,7 +245,7 @@ public class PipelineService {
             return failureMessage;
         }
     }
-    }
+
     public List<Pipeline> getAllPipeline(Long userId){
         User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
         return user.getPipelineList();
