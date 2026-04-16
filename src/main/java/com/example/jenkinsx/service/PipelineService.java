@@ -9,6 +9,7 @@ import com.example.jenkinsx.executor.SSHExecutor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.example.jenkinsx.util.SSHKeyUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +56,11 @@ public class PipelineService {
         );
 
         pipeline.setRepoUrl(normalizeRepo(dto.getRepoUrl()));
+        
+        // Auto-generate SSH Key Pair
+        SSHKeyUtils.SSHKeyPair keyPair = SSHKeyUtils.generateRSAKeyPair();
+        pipeline.setPublicKey(keyPair.getPublicKey());
+        pipeline.setPrivateKey(keyPair.getPrivateKey());
 
         pipeline = pipelineRepository.save(pipeline);
 
