@@ -126,6 +126,17 @@ public class PipelineService {
             for (Bundle bundle : pipeline.getIpAddressBundle()) {
                 for (String ip : bundle.getIpAddresses()) {
                     
+                    // Add a connection-level log for debugging
+                    PipelineLog connLog = PipelineLog.builder()
+                            .pipelineId(pipeline.getId())
+                            .taskName("Connection")
+                            .command("ssh " + bundle.getUsername() + "@" + ip)
+                            .output("Attempting to connect to " + ip + "...")
+                            .status("RUNNING")
+                            .timestamp(LocalDateTime.now())
+                            .build();
+                    connLog = logRepository.save(connLog);
+
                     // Layer 1: Environment Variables (Exports)
                     String secretExports = "";
                     if (pipeline.getSecretList() != null) {
@@ -134,6 +145,11 @@ public class PipelineService {
                                     "=\"" + s.getSecretContent() + "\" && ";
                         }
                     }
+                    
+                    // Update connection log
+                    connLog.setOutput("Connection to " + ip + " established. Starting tasks.");
+                    connLog.setStatus("SUCCESS");
+                    logRepository.save(connLog);
 
                     for (Task task : pipeline.getTasksList()) {
                         for (Commands cmd : task.getCommandsList()) {
