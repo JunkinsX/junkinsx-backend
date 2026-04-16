@@ -168,6 +168,17 @@ public class PipelineService {
                             
                             System.out.println("[Pipeline Service] Executing on " + ip + ": " + finalScript);
 
+                            // Create initial log entry so user sees progress immediately
+                            PipelineLog log = PipelineLog.builder()
+                                    .pipelineId(pipeline.getId())
+                                    .taskName(task.getTaskName())
+                                    .command(String.join("; ", substitutedCommands))
+                                    .output("Executing...")
+                                    .timestamp(LocalDateTime.now())
+                                    .status("RUNNING")
+                                    .build();
+                            log = logRepository.save(log);
+
                             String result = SSHExecutor.executeSingleCommand(
                                     ip,
                                     bundle.getUsername(),
@@ -175,15 +186,9 @@ public class PipelineService {
                                     finalScript
                             );
 
-                            PipelineLog log = PipelineLog.builder()
-                                    .pipelineId(pipeline.getId())
-                                    .taskName(task.getTaskName())
-                                    .command(String.join("; ", rawCommands))
-                                    .output(result)
-                                    .timestamp(LocalDateTime.now())
-                                    .status(result.contains("ERROR") ? "FAILED" : "SUCCESS")
-                                    .build();
-
+                            // Update log with actual output
+                            log.setOutput(result);
+                            log.setStatus(result.contains("ERROR") ? "FAILED" : "SUCCESS");
                             logRepository.save(log);
                             
                             if (log.getStatus().equals("FAILED")) {
