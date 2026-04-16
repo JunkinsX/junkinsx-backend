@@ -197,25 +197,39 @@ public class PipelineService {
                     for (Task task : pipeline.getTasksList()) {
                         for (Commands cmd : task.getCommandsList()) {
                             
-                            for (String raw : cmd.getCommandList()) {
+                            List<String> rawCommands = cmd.getCommandList();
+                            if (rawCommands == null || rawCommands.isEmpty()) continue;
+
+                            StringBuilder scriptBuilder = new StringBuilder();
+                            scriptBuilder.append("set -e\n"); // Stop on first error
+
+                            for (String raw : rawCommands) {
                                 String proc = raw.trim();
                                 if (proc.isEmpty()) continue;
 
+                                // Echo the command to the output so the user sees a "prompt"
+                                scriptBuilder.append("echo \"$ ").append(proc.replace("\"", "\\\"")).append("\"\n");
+
                                 // Smart Cleanup: Handle git clone directory conflicts
                                 if (proc.startsWith("git clone") && repoName != null && proc.contains(repoName)) {
-                                    // We still want to handle this silently or as a separate step?
-                                    // For "Real Raw" we should probably just execute what the user said
-                                    // But git clone failing is a very common frustration. 
-                                    // I will keep it but as an explicit separate raw command.
-                                    String cleanup = "rm -rf " + repoName;
-                                    executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
-                                            cleanup, "Cleanup", pipeline.getId(), secretExports, pipeline.getSecretList());
+                                    scriptBuilder.append("rm -rf ").append(repoName).append(" || true\n");
                                 }
 
-                                // Execute the user's raw command
-                                executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
-                                        proc, task.getTaskName(), pipeline.getId(), secretExports, pipeline.getSecretList());
+                                // Smart APT context
+                                if (proc.contains("apt") && (proc.contains("install") || proc.contains("update"))) {
+                                    if (proc.startsWith("sudo ")) {
+                                        proc = "sudo -n DEBIAN_FRONTEND=noninteractive " + proc.substring(5);
+                                    } else {
+                                        proc = "DEBIAN_FRONTEND=noninteractive " + proc;
+                                    }
+                                }
+                                
+                                scriptBuilder.append(substituteSecrets(proc, pipeline.getSecretList())).append("\n");
                             }
+
+                            // Execute all commands in this block as one session to preserve 'cd' state
+                            executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
+                                    scriptBuilder.toString(), task.getTaskName(), pipeline.getId(), secretExports, pipeline.getSecretList());
                         }
                     }
                 }
@@ -251,24 +265,12 @@ public class PipelineService {
     private void executeSingleCommandStep(String ip, String username, String privateKey, String command, 
                                           String taskName, Long pipelineId, String secretExports, List<Secret> secrets) {
         
-        String substituted = substituteSecrets(command, secrets);
-        
-        // Smart APT: Still inject DEBIAN_FRONTEND if using apt to prevent terminal hangs 
-        // even in "Raw" mode, because a hung SSH session is never what the user wants.
-        if (substituted.contains("apt") && (substituted.contains("install") || substituted.contains("update"))) {
-            if (substituted.startsWith("sudo ")) {
-                substituted = "sudo -n DEBIAN_FRONTEND=noninteractive " + substituted.substring(5);
-            } else {
-                substituted = "DEBIAN_FRONTEND=noninteractive " + substituted;
-            }
-        }
-
-        String finalScript = secretExports + substituted;
+        String finalScript = secretExports + command;
 
         PipelineLog log = PipelineLog.builder()
                 .pipelineId(pipelineId)
                 .taskName(taskName)
-                .command(substituted)
+                .command(command)
                 .output("Executing...")
                 .timestamp(LocalDateTime.now())
                 .status("RUNNING")
