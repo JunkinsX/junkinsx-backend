@@ -45,7 +45,8 @@ public class PipelineController {
 
     @GetMapping("/execute/{id}")
     public String execute(@PathVariable Long id) {
-        return pipelineService.executePipeline(id);
+        pipelineService.runPipelineAsync(id);
+        return "Pipeline execution started in background.";
     }
     
     @GetMapping()

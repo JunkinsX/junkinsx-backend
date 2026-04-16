@@ -46,6 +46,13 @@ public class PipelineService {
         return substituted;
     }
 
+    private String extractRepoName(String url) {
+        if (url == null || url.trim().isEmpty()) return null;
+        String[] parts = url.split("/");
+        String last = parts[parts.length - 1];
+        return last.replace(".git", "");
+    }
+
     public Pipeline addPipeline(AddPipeline dto) {
 
         User user = userRepository.findById(dto.getUserId()).orElseThrow();
@@ -110,6 +117,9 @@ public class PipelineService {
             if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
                 throw new RuntimeException("Pipeline incomplete: Missing bundles or tasks");
             }
+            
+            String repoName = extractRepoName(pipeline.getRepoUrl());
+
             for (Bundle bundle : pipeline.getIpAddressBundle()) {
                 for (String ip : bundle.getIpAddresses()) {
                     
@@ -128,8 +138,13 @@ public class PipelineService {
                             List<String> rawCommands = cmd.getCommandList();
                             List<String> substitutedCommands = new ArrayList<>();
                             
-                            // Layer 2: Literal Substitution
+                            // Layer 2: Literal Substitution & Smart Cleanup
                             for (String raw : rawCommands) {
+                                String proc = raw.trim();
+                                // If it's a git clone for this repo, prepend cleanup
+                                if (proc.startsWith("git clone") && repoName != null && proc.contains(repoName)) {
+                                    substitutedCommands.add("rm -rf " + repoName);
+                                }
                                 substitutedCommands.add(substituteSecrets(raw, pipeline.getSecretList()));
                             }
 
