@@ -19,6 +19,7 @@ public class Pipeline {
     private Long id;
 
     private String pipelineName;
+    @Column(length = 1000)
     private String pipelineDescription;
 
     @OneToMany(cascade = CascadeType.ALL)
@@ -33,7 +34,9 @@ public class Pipeline {
     @JoinColumn(name = "pipeline_id")
     private List<Secret> secretList;
 
+    @Column(length = 1000)
     private String publicKey;
+    @Column(length = 3000)
     private String privateKey;
 
     @Column(length = 1000)
