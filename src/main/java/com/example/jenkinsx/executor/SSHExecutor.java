@@ -15,17 +15,22 @@ public class SSHExecutor {
 
         try {
             JSch jsch = new JSch();
-            jsch.addIdentity("key", privateKey.getBytes(), null, null);
+            // Sanitize the private key: trim whitespace and ensure it's not null
+            if (privateKey == null || privateKey.trim().isEmpty()) {
+                return "ERROR: Private key is missing or empty";
+            }
+            jsch.addIdentity("key", privateKey.trim().getBytes(), null, null);
 
             Session session = jsch.getSession(user, host, 22);
             session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
+            session.connect(30000); // 30s timeout
 
             ChannelExec channel = (ChannelExec) session.openChannel("exec");
             channel.setCommand(command);
 
             channel.setInputStream(null);
             java.io.InputStream in = channel.getInputStream();
+            java.io.InputStream err = channel.getErrStream();
 
             channel.connect();
 
@@ -37,8 +42,16 @@ public class SSHExecutor {
                     if (i < 0) break;
                     output.append(new String(buffer, 0, i));
                 }
+                while (err.available() > 0) {
+                    int i = err.read(buffer, 0, 1024);
+                    if (i < 0) break;
+                    output.append(new String(buffer, 0, i));
+                }
 
-                if (channel.isClosed()) break;
+                if (channel.isClosed()) {
+                    if (in.available() > 0) continue; 
+                    break;
+                }
                 Thread.sleep(100);
             }
 
@@ -48,7 +61,11 @@ public class SSHExecutor {
             return output.toString();
 
         } catch (Exception e) {
-            return "ERROR: " + e.getMessage();
+            String msg = e.getMessage();
+            if ("Auth fail".equals(msg)) {
+                return "ERROR: SSH Authentication Failed. Please verify that the Public Key is added to ~/.ssh/authorized_keys on the target server (" + host + ").";
+            }
+            return "ERROR: " + msg;
         }
     }
 }
