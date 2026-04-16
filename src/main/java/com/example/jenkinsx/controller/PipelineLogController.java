@@ -19,6 +19,6 @@ public class PipelineLogController {
 
     @GetMapping("/{pipelineId}")
     public List<PipelineLog> getLogs(@PathVariable Long pipelineId) {
-        return logRepository.findByPipelineId(pipelineId);
+        return logRepository.findByPipelineIdOrderByIdAsc(pipelineId);
     }
 }

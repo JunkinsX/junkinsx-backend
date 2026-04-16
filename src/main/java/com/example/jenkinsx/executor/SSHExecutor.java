@@ -57,23 +57,33 @@ public class SSHExecutor {
                 
                 if (hasData && liveOutputCallback != null) {
                     long now = System.currentTimeMillis();
-                    if (now - lastCallbackTime > 1000) {
+                    // Throttling live updates to 500ms for better responsiveness
+                    if (now - lastCallbackTime > 500) {
                         liveOutputCallback.accept(output.toString());
                         lastCallbackTime = now;
                     }
                 }
 
                 if (channel.isClosed()) {
-                    if (in.available() > 0) continue; 
+                    // One last check for remaining data
+                    if (in.available() > 0 || err.available() > 0) continue; 
                     break;
                 }
                 Thread.sleep(100);
             }
 
+            // Wait a bit for the exit status to arrive if it hasn't yet
+            int exitStatus = channel.getExitStatus();
+            int retries = 0;
+            while (exitStatus == -1 && retries < 10) {
+                Thread.sleep(100);
+                exitStatus = channel.getExitStatus();
+                retries++;
+            }
+
             channel.disconnect();
             session.disconnect();
 
-            int exitStatus = channel.getExitStatus();
             if (exitStatus != 0) {
                 return "ERROR: Command exited with status " + exitStatus + "\n" + output.toString();
             }
