@@ -1,4 +1,4 @@
-package com.example.junkinsx;
+package com.example.jenkinsx;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

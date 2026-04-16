@@ -26,11 +26,11 @@ public class User {
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    private List<Pipeline> pipelineList;
+    private List<Pipeline> pipelineList = new java.util.ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    private List<Bundle> ipaddressBundles;
+    private List<Bundle> ipaddressBundles = new java.util.ArrayList<>();
 
     public User(String username, String email, String password) {
         this.username = username;
