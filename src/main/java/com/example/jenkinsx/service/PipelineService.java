@@ -236,6 +236,17 @@ public class PipelineService {
             pipeline.setStatus("FAILED");
             if (failureMessage == null) failureMessage = e.getMessage();
             System.err.println("Pipeline failed: " + failureMessage);
+            
+            // Log the systemic failure so the frontend knows it crashed before/during tasks
+            PipelineLog errLog = PipelineLog.builder()
+                    .pipelineId(pipeline.getId())
+                    .taskName("System Error")
+                    .command("Internal Execution")
+                    .output("Pipeline execution aborted: " + failureMessage)
+                    .status("FAILED")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            logRepository.save(errLog);
         }
         pipelineRepository.save(pipeline);
         
