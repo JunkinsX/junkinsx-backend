@@ -114,6 +114,9 @@ public class PipelineService {
         String failureMessage = null;
 
         try {
+            // Automatically clear old logs before starting a new run
+            clearLogs(pipelineId);
+            
             if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
                 throw new RuntimeException("Pipeline incomplete: Missing bundles or tasks");
             }
@@ -149,14 +152,21 @@ public class PipelineService {
 
                                 // Smart APT: Wait for dpkg lock if using apt
                                 if (proc.contains("apt") && (proc.contains("install") || proc.contains("update"))) {
-                                    String waitScript = "while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for other apt process...'; sleep 2; done";
+                                    // Use sudo -n (non-interactive) to catch nopasswd issues early
+                                    String waitScript = "while sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for other apt process...'; sleep 2; done";
                                     substitutedCommands.add(waitScript);
+                                    // Ensure the actual apt command also uses -n if it starts with sudo
+                                    if (proc.startsWith("sudo ")) {
+                                        proc = "sudo -n " + proc.substring(5);
+                                    }
                                 }
 
-                                substitutedCommands.add(substituteSecrets(raw, pipeline.getSecretList()));
+                                substitutedCommands.add(substituteSecrets(proc, pipeline.getSecretList()));
                             }
 
                             String finalScript = secretExports + String.join(" && ", substitutedCommands);
+                            
+                            System.out.println("[Pipeline Service] Executing on " + ip + ": " + finalScript);
 
                             String result = SSHExecutor.executeSingleCommand(
                                     ip,
