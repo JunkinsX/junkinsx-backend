@@ -32,4 +32,9 @@ public class BundleController {
     public List<Bundle> GetBundle(@RequestParam Long userId){
         return bundleService.getBundle(userId);
     }
+
+    @GetMapping("/{userId}")
+    public List<Bundle> GetBundlesFromUser(@PathVariable Long userId){
+        return bundleService.getBundle(userId);
+    }
 }

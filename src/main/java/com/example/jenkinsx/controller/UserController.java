@@ -26,12 +26,12 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest dto) {
+    public User register(@RequestBody RegisterRequest dto) {
         return userService.register(dto);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest dto) {
+    public User login(@RequestBody LoginRequest dto) {
         return userService.login(dto);
     }
 }

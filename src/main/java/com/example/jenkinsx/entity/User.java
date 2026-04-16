@@ -1,5 +1,6 @@
 package com.example.jenkinsx.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class User {
 
     private String username;
     private String email;
+    @JsonIgnore
     private String password;
 
     @OneToMany(cascade = CascadeType.ALL)

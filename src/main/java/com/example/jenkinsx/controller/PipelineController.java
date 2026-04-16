@@ -47,9 +47,14 @@ public class PipelineController {
     public String execute(@PathVariable Long id) {
         return pipelineService.executePipeline(id);
     }
+    
     @GetMapping()
     public List<Pipeline> GetAllPipeline(@RequestParam Long userId){
         return pipelineService.getAllPipeline(userId);
     }
-}
 
+    @GetMapping("/public-key/{id}")
+    public String getPublicKey(@PathVariable Long id) {
+        return pipelineService.getPublicKey(id);
+    }
+}

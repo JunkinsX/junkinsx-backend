@@ -1,0 +1,75 @@
+JunkinsX Backend API Documentation
+=================================
+
+Base URL: http://localhost:8080/api
+
+Authentication ( UserController )
+-------------------------------
+POST /api/user/register
+    Request Body: RegisterRequest { username, email, password }
+    Response: User object (id, username, email, lists of pipelines/bundles)
+    Note: Passwords are encrypted using BCrypt.
+
+POST /api/user/login
+    Request Body: LoginRequest { email, password }
+    Response: User object (id, username, email, etc.)
+    Note: Returns 500 error on invalid credentials (via GlobalExceptionHandler).
+
+GET /api/user
+    Response: List<User>
+
+Pipeline Management ( PipelineController )
+-----------------------------------------
+POST /api/pipeline/add
+    Request Body: AddPipeline { userId, pipelineName, pipelineDescription, repoUrl }
+    Response: Created Pipeline object.
+
+POST /api/pipeline/add-bundle
+    Request Body: AddBundleToPipeline { pipelineId, List<Bundle> }
+    Response: Updated Pipeline object.
+
+POST /api/pipeline/add-tasks
+    Request Body: AddTasksToPipeline { pipelineId, List<Task> }
+    Response: Updated Pipeline object.
+
+POST /api/pipeline/add-secrets
+    Request Body: AddSecretsToPipeline { pipelineId, List<Secret> }
+    Response: Updated Pipeline object.
+
+POST /api/pipeline/set-keys
+    Request Body: SetPublicPrivateKey { pipelineId, publicKey, privateKey }
+    Response: Updated Pipeline object.
+
+GET /api/pipeline/execute/{pipelineId}
+    Description: Triggers manual execution of the pipeline.
+    Response: String status message. 
+    Success: "Pipeline execution finished successfully."
+    Failure: "Pipeline failed at task: [Task Name]"
+
+GET /api/pipeline/public-key/{id}
+    Description: Returns the SSH public key for the pipeline.
+    Response: Plain text public key string.
+
+Webhooks ( WebhookController )
+-----------------------------
+POST /api/webhook/github
+    Description: Receives "push" events from GitHub.
+    Headers: X-GitHub-Event: push
+    Functionality: Normalizes repo URL and triggers all matching pipelines asynchronously.
+
+Logs ( PipelineLogController )
+-----------------------------
+GET /api/logs/{pipelineId}
+    Response: List<PipelineLog> { id, pipelineId, taskName, command, output, timestamp, status }
+
+Variable Substitution & Secrets
+-------------------------------
+Substitution Engine:
+    Substitutes placeholders in format '$SECRET_NAME' with 'secretContent' from the pipeline's secret list.
+    Example: 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+    Substitution happens literally in the backend before sending the command over SSH.
+
+Execution Context:
+    1. Layer 1: Environment variables are exported ('export KEY="VAL" && ...').
+    2. Layer 2: Literal string substitution for explicit '$' tokens.
+    3. Failure Reporting: If a task fails, execution stops immediately and returns a message specifying the failed task.
