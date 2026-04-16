@@ -22,6 +22,7 @@ public class PipelineLog {
     @Column(columnDefinition = "TEXT")
     private String output;
 
+    @Column(columnDefinition = "TEXT")
     private String command;
 
     private String taskName;

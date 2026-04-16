@@ -19,5 +19,6 @@ public class Commands {
     private Long id;
 
     @ElementCollection
+    @Column(columnDefinition = "TEXT")
     private List<String> commandList;
 }
