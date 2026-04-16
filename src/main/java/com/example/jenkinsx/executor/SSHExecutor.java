@@ -58,6 +58,11 @@ public class SSHExecutor {
             channel.disconnect();
             session.disconnect();
 
+            int exitStatus = channel.getExitStatus();
+            if (exitStatus != 0) {
+                return "ERROR: Command exited with status " + exitStatus + "\n" + output.toString();
+            }
+
             return output.toString();
 
         } catch (Exception e) {

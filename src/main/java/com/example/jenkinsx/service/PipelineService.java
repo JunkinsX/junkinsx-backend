@@ -8,6 +8,7 @@ import com.example.jenkinsx.repository.UserRepository;
 import com.example.jenkinsx.executor.SSHExecutor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.example.jenkinsx.util.SSHKeyUtils;
 import java.time.LocalDateTime;
@@ -20,12 +21,15 @@ public class PipelineService {
     private final PipelineRepository pipelineRepository;
     private final UserRepository userRepository;
     private final PipelineLogRepository logRepository;
+    private final TransactionTemplate transactionTemplate;
 
     public PipelineService(PipelineRepository pipelineRepository,
-                           UserRepository userRepository, PipelineLogRepository pipelineLogRepository) {
+                           UserRepository userRepository, PipelineLogRepository pipelineLogRepository,
+                           TransactionTemplate transactionTemplate) {
         this.pipelineRepository = pipelineRepository;
         this.userRepository = userRepository;
         this.logRepository = pipelineLogRepository;
+        this.transactionTemplate = transactionTemplate;
     }
 
 
@@ -113,12 +117,26 @@ public class PipelineService {
     }
 
     public String executePipeline(Long pipelineId) {
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow();
-        
-        // Eagerly load collections to avoid LazyInitializationException in the async thread
-        if (pipeline.getIpAddressBundle() != null) pipeline.getIpAddressBundle().size();
-        if (pipeline.getTasksList() != null) pipeline.getTasksList().size();
-        if (pipeline.getSecretList() != null) pipeline.getSecretList().size();
+        Pipeline pipeline = transactionTemplate.execute(status -> {
+            Pipeline p = pipelineRepository.findById(pipelineId).orElseThrow();
+            
+            // Eagerly load collections to avoid LazyInitializationException in the async thread
+            if (p.getIpAddressBundle() != null) p.getIpAddressBundle().size();
+            if (p.getTasksList() != null) {
+                p.getTasksList().size();
+                for (Task t : p.getTasksList()) {
+                    if (t.getCommandsList() != null) {
+                        t.getCommandsList().size();
+                        for (Commands c : t.getCommandsList()) {
+                            if (c.getCommandList() != null) c.getCommandList().size();
+                        }
+                    }
+                }
+            }
+            if (p.getSecretList() != null) p.getSecretList().size();
+            
+            return p;
+        });
 
         pipeline.setStatus("RUNNING");
         pipelineRepository.save(pipeline);
