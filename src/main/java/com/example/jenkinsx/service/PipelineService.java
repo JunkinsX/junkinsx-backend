@@ -197,79 +197,24 @@ public class PipelineService {
                     for (Task task : pipeline.getTasksList()) {
                         for (Commands cmd : task.getCommandsList()) {
                             
-                            List<String> rawCommands = cmd.getCommandList();
-                            List<String> substitutedCommands = new ArrayList<>();
-                            
-                            // Layer 2: Literal Substitution & Smart Cleanup & Smart APT
-                            for (String raw : rawCommands) {
+                            for (String raw : cmd.getCommandList()) {
                                 String proc = raw.trim();
-                                
+                                if (proc.isEmpty()) continue;
+
                                 // Smart Cleanup: Handle git clone directory conflicts
                                 if (proc.startsWith("git clone") && repoName != null && proc.contains(repoName)) {
-                                    substitutedCommands.add("rm -rf " + repoName);
+                                    // We still want to handle this silently or as a separate step?
+                                    // For "Real Raw" we should probably just execute what the user said
+                                    // But git clone failing is a very common frustration. 
+                                    // I will keep it but as an explicit separate raw command.
+                                    String cleanup = "rm -rf " + repoName;
+                                    executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
+                                            cleanup, "Cleanup", pipeline.getId(), secretExports, pipeline.getSecretList());
                                 }
 
-                                // Smart APT: Wait for dpkg lock if using apt
-                                if (proc.contains("apt") && (proc.contains("install") || proc.contains("update"))) {
-                                    // Use sudo -n (non-interactive) to catch issues early
-                                    String waitScript = "export DEBIAN_FRONTEND=noninteractive && while sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for other apt process...'; sleep 2; done";
-                                    substitutedCommands.add(waitScript);
-                                    
-                                    // Auto-inject apt update if they forgot it before an install command
-                                    if (proc.contains("install")) {
-                                        substitutedCommands.add("sudo -n DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing -y");
-                                    }
-
-                                    // Ensure the actual apt command uses non-interactive mode and -n
-                                    if (proc.startsWith("sudo ")) {
-                                        proc = "sudo -n DEBIAN_FRONTEND=noninteractive " + proc.substring(5);
-                                    } else {
-                                        proc = "DEBIAN_FRONTEND=noninteractive " + proc;
-                                    }
-                                }
-
-                                substitutedCommands.add(substituteSecrets(proc, pipeline.getSecretList()));
-                            }
-
-                            String finalScript = secretExports + String.join(" && ", substitutedCommands);
-                            
-                            System.out.println("[Pipeline Service] Executing on " + ip + ": " + finalScript);
-
-                            // Create initial log entry
-                            PipelineLog tempLog = PipelineLog.builder()
-                                    .pipelineId(pipeline.getId())
-                                    .taskName(task.getTaskName())
-                                    .command(String.join("; ", substitutedCommands))
-                                    .output("Executing task: " + task.getTaskName() + "...")
-                                    .timestamp(LocalDateTime.now())
-                                    .status("RUNNING")
-                                    .build();
-                            final PipelineLog savedLog = logRepository.save(tempLog);
-                            messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), savedLog);
-
-                            String result = SSHExecutor.executeSingleCommand(
-                                    ip,
-                                    bundle.getUsername(),
-                                    pipeline.getPrivateKey(),
-                                    finalScript,
-                                    liveOut -> {
-                                        savedLog.setOutput(liveOut);
-                                        logRepository.save(savedLog);
-                                        messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), savedLog);
-                                    }
-                            );
-
-                            // Update log with actual output
-                            savedLog.setOutput(result);
-                            // Robust error detection: Case-insensitive "ERROR:" prefix from SSHExecutor
-                            boolean failed = result.toUpperCase().startsWith("ERROR:");
-                            savedLog.setStatus(failed ? "FAILED" : "SUCCESS");
-                            logRepository.save(savedLog);
-                            messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), savedLog);
-                            
-                            if (failed) {
-                                failureMessage = "Pipeline failed at task: [" + task.getTaskName() + "]";
-                                throw new RuntimeException(failureMessage);
+                                // Execute the user's raw command
+                                executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
+                                        proc, task.getTaskName(), pipeline.getId(), secretExports, pipeline.getSecretList());
                             }
                         }
                     }
@@ -300,6 +245,58 @@ public class PipelineService {
             return "Pipeline execution finished successfully.";
         } else {
             return failureMessage;
+        }
+    }
+
+    private void executeSingleCommandStep(String ip, String username, String privateKey, String command, 
+                                          String taskName, Long pipelineId, String secretExports, List<Secret> secrets) {
+        
+        String substituted = substituteSecrets(command, secrets);
+        
+        // Smart APT: Still inject DEBIAN_FRONTEND if using apt to prevent terminal hangs 
+        // even in "Raw" mode, because a hung SSH session is never what the user wants.
+        if (substituted.contains("apt") && (substituted.contains("install") || substituted.contains("update"))) {
+            if (substituted.startsWith("sudo ")) {
+                substituted = "sudo -n DEBIAN_FRONTEND=noninteractive " + substituted.substring(5);
+            } else {
+                substituted = "DEBIAN_FRONTEND=noninteractive " + substituted;
+            }
+        }
+
+        String finalScript = secretExports + substituted;
+
+        PipelineLog log = PipelineLog.builder()
+                .pipelineId(pipelineId)
+                .taskName(taskName)
+                .command(substituted)
+                .output("Executing...")
+                .timestamp(LocalDateTime.now())
+                .status("RUNNING")
+                .build();
+
+        final PipelineLog savedLog = logRepository.save(log);
+        messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, savedLog);
+
+        String result = SSHExecutor.executeSingleCommand(
+                ip,
+                username,
+                privateKey,
+                finalScript,
+                liveOut -> {
+                    savedLog.setOutput(liveOut);
+                    logRepository.save(savedLog);
+                    messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, savedLog);
+                }
+        );
+
+        savedLog.setOutput(result);
+        boolean failed = result.toUpperCase().startsWith("ERROR:");
+        savedLog.setStatus(failed ? "FAILED" : "SUCCESS");
+        logRepository.save(savedLog);
+        messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, savedLog);
+
+        if (failed) {
+            throw new RuntimeException("Pipeline failed at step: [" + command + "]");
         }
     }
 
