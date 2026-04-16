@@ -185,8 +185,12 @@ public class PipelineService {
         return user.getPipelineList();
     }
 
-    public String getPublicKey(Long pipelineId) {
-        Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow(() -> new RuntimeException("Pipeline not found"));
+    public String getPublicKey(Long id) {
+        Pipeline pipeline = pipelineRepository.findById(id).orElseThrow(() -> new RuntimeException("Pipeline not found"));
         return pipeline.getPublicKey();
+    }
+
+    public void clearLogs(Long pipelineId) {
+        logRepository.deleteByPipelineId(pipelineId);
     }
 }

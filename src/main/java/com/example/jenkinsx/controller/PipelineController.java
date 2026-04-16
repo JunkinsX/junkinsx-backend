@@ -57,4 +57,9 @@ public class PipelineController {
     public String getPublicKey(@PathVariable Long id) {
         return pipelineService.getPublicKey(id);
     }
+
+    @DeleteMapping("/logs/{id}")
+    public void clearLogs(@PathVariable Long id) {
+        pipelineService.clearLogs(id);
+    }
 }
