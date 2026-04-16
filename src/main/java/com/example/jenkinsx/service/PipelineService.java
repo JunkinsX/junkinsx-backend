@@ -121,7 +121,12 @@ public class PipelineService {
             Pipeline p = pipelineRepository.findById(pipelineId).orElseThrow();
             
             // Eagerly load collections to avoid LazyInitializationException in the async thread
-            if (p.getIpAddressBundle() != null) p.getIpAddressBundle().size();
+            if (p.getIpAddressBundle() != null) {
+                p.getIpAddressBundle().size();
+                for (Bundle b : p.getIpAddressBundle()) {
+                    if (b.getIpAddresses() != null) b.getIpAddresses().size();
+                }
+            }
             if (p.getTasksList() != null) {
                 p.getTasksList().size();
                 for (Task t : p.getTasksList()) {
