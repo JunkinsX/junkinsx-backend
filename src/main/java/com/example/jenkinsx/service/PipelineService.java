@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.example.jenkinsx.util.SSHKeyUtils;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +23,16 @@ public class PipelineService {
     private final UserRepository userRepository;
     private final PipelineLogRepository logRepository;
     private final TransactionTemplate transactionTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public PipelineService(PipelineRepository pipelineRepository,
                            UserRepository userRepository, PipelineLogRepository pipelineLogRepository,
-                           TransactionTemplate transactionTemplate) {
+                           TransactionTemplate transactionTemplate, SimpMessagingTemplate messagingTemplate) {
         this.pipelineRepository = pipelineRepository;
         this.userRepository = userRepository;
         this.logRepository = pipelineLogRepository;
         this.transactionTemplate = transactionTemplate;
+        this.messagingTemplate = messagingTemplate;
     }
 
 
@@ -174,6 +177,7 @@ public class PipelineService {
                             .timestamp(LocalDateTime.now())
                             .build();
                     connLog = logRepository.save(connLog);
+                    messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), connLog);
 
                     // Layer 1: Environment Variables (Exports)
                     String secretExports = "";
@@ -188,6 +192,7 @@ public class PipelineService {
                     connLog.setOutput("Connection to " + ip + " established. Starting tasks.");
                     connLog.setStatus("SUCCESS");
                     logRepository.save(connLog);
+                    messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), connLog);
 
                     for (Task task : pipeline.getTasksList()) {
                         for (Commands cmd : task.getCommandsList()) {
@@ -234,6 +239,7 @@ public class PipelineService {
                                     .status("RUNNING")
                                     .build();
                             final PipelineLog savedLog = logRepository.save(tempLog);
+                            messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), savedLog);
 
                             String result = SSHExecutor.executeSingleCommand(
                                     ip,
@@ -243,6 +249,7 @@ public class PipelineService {
                                     liveOut -> {
                                         savedLog.setOutput(liveOut);
                                         logRepository.save(savedLog);
+                                        messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), savedLog);
                                     }
                             );
 
@@ -250,6 +257,7 @@ public class PipelineService {
                             savedLog.setOutput(result);
                             savedLog.setStatus(result.contains("ERROR") ? "FAILED" : "SUCCESS");
                             logRepository.save(savedLog);
+                            messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), savedLog);
                             
                             if (savedLog.getStatus().equals("FAILED")) {
                                 failureMessage = "Pipeline failed at task: [" + task.getTaskName() + "]";
@@ -275,7 +283,8 @@ public class PipelineService {
                     .status("FAILED")
                     .timestamp(LocalDateTime.now())
                     .build();
-            logRepository.save(errLog);
+            errLog = logRepository.save(errLog);
+            messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, errLog);
         }
         pipelineRepository.save(pipeline);
         
