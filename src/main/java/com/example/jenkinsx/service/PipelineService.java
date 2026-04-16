@@ -106,8 +106,20 @@ public class PipelineService {
         return pipelineRepository.save(pipeline);
     }
 
+    @Async
+    public void runPipelineAsync(Long id) {
+        // Fetch a fresh instance inside the async thread to ensure a valid session
+        executePipeline(id);
+    }
+
     public String executePipeline(Long pipelineId) {
         Pipeline pipeline = pipelineRepository.findById(pipelineId).orElseThrow();
+        
+        // Eagerly load collections to avoid LazyInitializationException in the async thread
+        if (pipeline.getIpAddressBundle() != null) pipeline.getIpAddressBundle().size();
+        if (pipeline.getTasksList() != null) pipeline.getTasksList().size();
+        if (pipeline.getSecretList() != null) pipeline.getSecretList().size();
+
         pipeline.setStatus("RUNNING");
         pipelineRepository.save(pipeline);
         
@@ -117,8 +129,11 @@ public class PipelineService {
             // Automatically clear old logs before starting a new run
             clearLogs(pipelineId);
             
-            if (pipeline.getIpAddressBundle() == null || pipeline.getTasksList() == null) {
-                throw new RuntimeException("Pipeline incomplete: Missing bundles or tasks");
+            if (pipeline.getIpAddressBundle() == null || pipeline.getIpAddressBundle().isEmpty()) {
+                throw new RuntimeException("No bundles (server IPs) attached to this pipeline.");
+            }
+            if (pipeline.getTasksList() == null || pipeline.getTasksList().isEmpty()) {
+                throw new RuntimeException("No tasks attached to this pipeline.");
             }
             
             String repoName = extractRepoName(pipeline.getRepoUrl());
@@ -230,9 +245,6 @@ public class PipelineService {
             return failureMessage;
         }
     }
-    @Async
-    public void runPipelineAsync(Long id) {
-        executePipeline(id);
     }
     public List<Pipeline> getAllPipeline(Long userId){
         User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
