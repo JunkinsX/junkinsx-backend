@@ -138,13 +138,21 @@ public class PipelineService {
                             List<String> rawCommands = cmd.getCommandList();
                             List<String> substitutedCommands = new ArrayList<>();
                             
-                            // Layer 2: Literal Substitution & Smart Cleanup
+                            // Layer 2: Literal Substitution & Smart Cleanup & Smart APT
                             for (String raw : rawCommands) {
                                 String proc = raw.trim();
-                                // If it's a git clone for this repo, prepend cleanup
+                                
+                                // Smart Cleanup: Handle git clone directory conflicts
                                 if (proc.startsWith("git clone") && repoName != null && proc.contains(repoName)) {
                                     substitutedCommands.add("rm -rf " + repoName);
                                 }
+
+                                // Smart APT: Wait for dpkg lock if using apt
+                                if (proc.contains("apt") && (proc.contains("install") || proc.contains("update"))) {
+                                    String waitScript = "while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for other apt process...'; sleep 2; done";
+                                    substitutedCommands.add(waitScript);
+                                }
+
                                 substitutedCommands.add(substituteSecrets(raw, pipeline.getSecretList()));
                             }
 
