@@ -2,13 +2,16 @@ package com.example.jenkinsx.executor;
 
 import com.jcraft.jsch.*;
 
+import java.util.function.Consumer;
+
 public class SSHExecutor {
 
     public static String executeSingleCommand(
             String host,
             String user,
             String privateKey,
-            String command
+            String command,
+            Consumer<String> liveOutputCallback
     ) {
 
         StringBuilder output = new StringBuilder();
@@ -35,17 +38,29 @@ public class SSHExecutor {
             channel.connect();
 
             byte[] buffer = new byte[1024];
+            long lastCallbackTime = System.currentTimeMillis();
 
             while (true) {
+                boolean hasData = false;
                 while (in.available() > 0) {
                     int i = in.read(buffer, 0, 1024);
                     if (i < 0) break;
                     output.append(new String(buffer, 0, i));
+                    hasData = true;
                 }
                 while (err.available() > 0) {
                     int i = err.read(buffer, 0, 1024);
                     if (i < 0) break;
                     output.append(new String(buffer, 0, i));
+                    hasData = true;
+                }
+                
+                if (hasData && liveOutputCallback != null) {
+                    long now = System.currentTimeMillis();
+                    if (now - lastCallbackTime > 1000) {
+                        liveOutputCallback.accept(output.toString());
+                        lastCallbackTime = now;
+                    }
                 }
 
                 if (channel.isClosed()) {

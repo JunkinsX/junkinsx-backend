@@ -207,11 +207,13 @@ public class PipelineService {
                                 // Smart APT: Wait for dpkg lock if using apt
                                 if (proc.contains("apt") && (proc.contains("install") || proc.contains("update"))) {
                                     // Use sudo -n (non-interactive) to catch nopasswd issues early
-                                    String waitScript = "while sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for other apt process...'; sleep 2; done";
+                                    String waitScript = "export DEBIAN_FRONTEND=noninteractive && while sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for other apt process...'; sleep 2; done";
                                     substitutedCommands.add(waitScript);
                                     // Ensure the actual apt command also uses -n if it starts with sudo
                                     if (proc.startsWith("sudo ")) {
-                                        proc = "sudo -n " + proc.substring(5);
+                                        proc = "sudo -n DEBIAN_FRONTEND=noninteractive " + proc.substring(5);
+                                    } else {
+                                        proc = "DEBIAN_FRONTEND=noninteractive " + proc;
                                     }
                                 }
 
@@ -223,7 +225,7 @@ public class PipelineService {
                             System.out.println("[Pipeline Service] Executing on " + ip + ": " + finalScript);
 
                             // Create initial log entry so user sees progress immediately
-                            PipelineLog log = PipelineLog.builder()
+                            PipelineLog tempLog = PipelineLog.builder()
                                     .pipelineId(pipeline.getId())
                                     .taskName(task.getTaskName())
                                     .command(String.join("; ", substitutedCommands))
@@ -231,21 +233,25 @@ public class PipelineService {
                                     .timestamp(LocalDateTime.now())
                                     .status("RUNNING")
                                     .build();
-                            log = logRepository.save(log);
+                            final PipelineLog savedLog = logRepository.save(tempLog);
 
                             String result = SSHExecutor.executeSingleCommand(
                                     ip,
                                     bundle.getUsername(),
                                     pipeline.getPrivateKey(),
-                                    finalScript
+                                    finalScript,
+                                    liveOut -> {
+                                        savedLog.setOutput(liveOut);
+                                        logRepository.save(savedLog);
+                                    }
                             );
 
                             // Update log with actual output
-                            log.setOutput(result);
-                            log.setStatus(result.contains("ERROR") ? "FAILED" : "SUCCESS");
-                            logRepository.save(log);
+                            savedLog.setOutput(result);
+                            savedLog.setStatus(result.contains("ERROR") ? "FAILED" : "SUCCESS");
+                            logRepository.save(savedLog);
                             
-                            if (log.getStatus().equals("FAILED")) {
+                            if (savedLog.getStatus().equals("FAILED")) {
                                 failureMessage = "Pipeline failed at task: [" + task.getTaskName() + "]";
                                 throw new RuntimeException(failureMessage);
                             }
