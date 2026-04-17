@@ -186,11 +186,23 @@ public class PipelineService {
                                     }
                                 }
                                 
-                                // Smart Server Detach: Prevent SSH from hanging indefinitely on foreground servers.
-                                if (proc.endsWith("&")) {
-                                    proc = "nohup " + proc.substring(0, proc.length() - 1).trim() + " > /dev/null 2>&1 &";
-                                } else if (proc.trim().equals("npm start") || proc.trim().equals("npm run start")) {
-                                    proc = "nohup " + proc.trim() + " > /dev/null 2>&1 &";
+                                // Aggressive Smart Server Detach: Prevent SSH from hanging indefinitely on foreground servers.
+                                String trimProc = proc.trim();
+                                if (trimProc.endsWith("&") || 
+                                    trimProc.startsWith("npm start") || 
+                                    trimProc.startsWith("npm run start") || 
+                                    trimProc.startsWith("npm run dev") ||
+                                    trimProc.startsWith("node ") || 
+                                    trimProc.startsWith("nodemon ") || 
+                                    trimProc.startsWith("java -jar ") || 
+                                    trimProc.startsWith("python ") ||
+                                    trimProc.startsWith("python3 ") ||
+                                    trimProc.startsWith("uvicorn ")) {
+                                    
+                                    if (trimProc.endsWith("&")) {
+                                        trimProc = trimProc.substring(0, trimProc.length() - 1).trim();
+                                    }
+                                    proc = "nohup " + trimProc + " > /dev/null 2>&1 &";
                                 }
 
                                 scriptBuilder.append(substituteSecrets(proc, pipeline.getSecretList())).append("\n");
