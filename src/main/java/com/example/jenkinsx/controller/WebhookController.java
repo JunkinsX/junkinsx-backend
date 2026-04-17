@@ -43,7 +43,7 @@ public class WebhookController {
             System.out.println("Branch: " + branch);
             List<Pipeline> pipelines = pipelineRepository.findByRepoUrl(repoUrl);
             for (Pipeline p : pipelines) {
-                pipelineService.runPipelineAsync(p.getId());
+                pipelineService.runPipelineAsync(p.getId(), "GitHub Webhook");
             }
             return "Triggered pipelines: " + pipelines.size();
         } catch (Exception e) {

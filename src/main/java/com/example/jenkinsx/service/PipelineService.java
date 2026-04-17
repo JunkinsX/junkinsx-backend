@@ -2,7 +2,7 @@ package com.example.jenkinsx.service;
 
 import com.example.jenkinsx.dto.*;
 import com.example.jenkinsx.entity.*;
-import com.example.jenkinsx.repository.PipelineLogRepository;
+import com.example.jenkinsx.repository.PipelineHistoryRepository;
 import com.example.jenkinsx.repository.PipelineRepository;
 import com.example.jenkinsx.repository.UserRepository;
 import com.example.jenkinsx.executor.SSHExecutor;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.example.jenkinsx.util.SSHKeyUtils;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,20 +20,17 @@ public class PipelineService {
 
     private final PipelineRepository pipelineRepository;
     private final UserRepository userRepository;
-    private final PipelineLogRepository logRepository;
+    private final PipelineHistoryRepository historyRepository;
     private final TransactionTemplate transactionTemplate;
-    private final SimpMessagingTemplate messagingTemplate;
 
     public PipelineService(PipelineRepository pipelineRepository,
-                           UserRepository userRepository, PipelineLogRepository pipelineLogRepository,
-                           TransactionTemplate transactionTemplate, SimpMessagingTemplate messagingTemplate) {
+                           UserRepository userRepository, PipelineHistoryRepository historyRepository,
+                           TransactionTemplate transactionTemplate) {
         this.pipelineRepository = pipelineRepository;
         this.userRepository = userRepository;
-        this.logRepository = pipelineLogRepository;
+        this.historyRepository = historyRepository;
         this.transactionTemplate = transactionTemplate;
-        this.messagingTemplate = messagingTemplate;
     }
-
 
     private String normalizeRepo(String url) {
         if (url == null) return null;
@@ -61,17 +57,10 @@ public class PipelineService {
     }
 
     public Pipeline addPipeline(AddPipeline dto) {
-
         User user = userRepository.findById(dto.getUserId()).orElseThrow();
-
-        Pipeline pipeline = new Pipeline(
-                dto.getPipelineName(),
-                dto.getPipelineDescription()
-        );
-
+        Pipeline pipeline = new Pipeline(dto.getPipelineName(), dto.getPipelineDescription());
         pipeline.setRepoUrl(normalizeRepo(dto.getRepoUrl()));
         
-        // Auto-generate SSH Key Pair
         SSHKeyUtils.SSHKeyPair keyPair = SSHKeyUtils.generateRSAKeyPair();
         pipeline.setPublicKey(keyPair.getPublicKey());
         pipeline.setPrivateKey(keyPair.getPrivateKey());
@@ -81,10 +70,8 @@ public class PipelineService {
         if (user.getPipelineList() == null) {
             user.setPipelineList(new ArrayList<>());
         }
-
         user.getPipelineList().add(pipeline);
         userRepository.save(user);
-
         return pipeline;
     }
 
@@ -114,16 +101,13 @@ public class PipelineService {
     }
 
     @Async
-    public void runPipelineAsync(Long id) {
-        // Fetch a fresh instance inside the async thread to ensure a valid session
-        executePipeline(id);
+    public void runPipelineAsync(Long id, String triggeredBy) {
+        executePipeline(id, triggeredBy);
     }
 
-    public String executePipeline(Long pipelineId) {
+    public String executePipeline(Long pipelineId, String triggeredBy) {
         Pipeline pipeline = transactionTemplate.execute(status -> {
             Pipeline p = pipelineRepository.findById(pipelineId).orElseThrow();
-            
-            // Eagerly load collections to avoid LazyInitializationException in the async thread
             if (p.getIpAddressBundle() != null) {
                 p.getIpAddressBundle().size();
                 for (Bundle b : p.getIpAddressBundle()) {
@@ -142,19 +126,22 @@ public class PipelineService {
                 }
             }
             if (p.getSecretList() != null) p.getSecretList().size();
-            
             return p;
         });
 
-        pipeline.setStatus("RUNNING");
-        pipelineRepository.save(pipeline);
-        
+        int currentRun = historyRepository.findByPipelineIdOrderByTimestampDesc(pipelineId).size() + 1;
+
+        PipelineHistory history = new PipelineHistory();
+        history.setPipeline(pipeline);
+        history.setRunNumber(currentRun);
+        history.setTriggeredBy(triggeredBy);
+        history.setStatus("RUNNING");
+        history.setTimestamp(LocalDateTime.now());
+        history = historyRepository.save(history);
+
         String failureMessage = null;
 
         try {
-            // Automatically clear old logs before starting a new run
-            clearLogs(pipelineId);
-            
             if (pipeline.getIpAddressBundle() == null || pipeline.getIpAddressBundle().isEmpty()) {
                 throw new RuntimeException("No bundles (server IPs) attached to this pipeline.");
             }
@@ -166,20 +153,6 @@ public class PipelineService {
 
             for (Bundle bundle : pipeline.getIpAddressBundle()) {
                 for (String ip : bundle.getIpAddresses()) {
-                    
-                    // Add a connection-level log for debugging
-                    PipelineLog connLog = PipelineLog.builder()
-                            .pipelineId(pipeline.getId())
-                            .taskName("Connection")
-                            .command("ssh " + bundle.getUsername() + "@" + ip)
-                            .output("Attempting to connect to " + ip + "...")
-                            .status("RUNNING")
-                            .timestamp(LocalDateTime.now())
-                            .build();
-                    connLog = logRepository.save(connLog);
-                    messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), connLog);
-
-                    // Layer 1: Environment Variables (Exports)
                     String secretExports = "";
                     if (pipeline.getSecretList() != null) {
                         for (Secret s : pipeline.getSecretList()) {
@@ -188,34 +161,22 @@ public class PipelineService {
                         }
                     }
                     
-                    // Update connection log
-                    connLog.setOutput("Connection to " + ip + " established. Starting tasks.");
-                    connLog.setStatus("SUCCESS");
-                    logRepository.save(connLog);
-                    messagingTemplate.convertAndSend("/topic/logs/" + pipeline.getId(), connLog);
-
                     for (Task task : pipeline.getTasksList()) {
                         for (Commands cmd : task.getCommandsList()) {
-                            
                             List<String> rawCommands = cmd.getCommandList();
                             if (rawCommands == null || rawCommands.isEmpty()) continue;
 
                             StringBuilder scriptBuilder = new StringBuilder();
-                            scriptBuilder.append("set -e\n"); // Stop on first error
+                            scriptBuilder.append("set -e\n");
 
                             for (String raw : rawCommands) {
                                 String proc = raw.trim();
                                 if (proc.isEmpty()) continue;
 
-                                // Echo the command to the output so the user sees a "prompt"
-                                scriptBuilder.append("echo \"$ ").append(proc.replace("\"", "\\\"")).append("\"\n");
-
-                                // Smart Cleanup: Handle git clone directory conflicts
                                 if (proc.startsWith("git clone") && repoName != null && proc.contains(repoName)) {
                                     scriptBuilder.append("rm -rf ").append(repoName).append(" || true\n");
                                 }
 
-                                // Smart APT context
                                 if (proc.contains("apt") && (proc.contains("install") || proc.contains("update"))) {
                                     if (proc.startsWith("sudo ")) {
                                         proc = "sudo -n DEBIAN_FRONTEND=noninteractive " + proc.substring(5);
@@ -227,78 +188,40 @@ public class PipelineService {
                                 scriptBuilder.append(substituteSecrets(proc, pipeline.getSecretList())).append("\n");
                             }
 
-                            // Execute all commands in this block as one session to preserve 'cd' state
                             executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
-                                    scriptBuilder.toString(), task.getTaskName(), pipeline.getId(), secretExports, pipeline.getSecretList());
+                                    scriptBuilder.toString(), task.getTaskName());
                         }
                     }
                 }
             }
-            pipeline.setStatus("SUCCESS");
+            history.setStatus("SUCCESS");
 
         } catch (Exception e) {
-            pipeline.setStatus("FAILED");
+            history.setStatus("FAILED");
+            String[] splitMessage = e.getMessage().split(":", 2);
+            if (splitMessage[0].equals("Task Failed")) {
+               history.setFailedAtTask(splitMessage[1].trim());
+            } else {
+               history.setFailedAtTask("System Error: " + e.getMessage());
+            }
             if (failureMessage == null) failureMessage = e.getMessage();
             System.err.println("Pipeline failed: " + failureMessage);
-            
-            // Log the systemic failure so the frontend knows it crashed before/during tasks
-            PipelineLog errLog = PipelineLog.builder()
-                    .pipelineId(pipeline.getId())
-                    .taskName("System Error")
-                    .command("Internal Execution")
-                    .output("Pipeline execution aborted: " + failureMessage)
-                    .status("FAILED")
-                    .timestamp(LocalDateTime.now())
-                    .build();
-            errLog = logRepository.save(errLog);
-            messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, errLog);
         }
-        pipelineRepository.save(pipeline);
         
-        if (pipeline.getStatus().equals("SUCCESS")) {
+        historyRepository.save(history);
+        
+        if ("SUCCESS".equals(history.getStatus())) {
             return "Pipeline execution finished successfully.";
         } else {
             return failureMessage;
         }
     }
 
-    private void executeSingleCommandStep(String ip, String username, String privateKey, String command, 
-                                          String taskName, Long pipelineId, String secretExports, List<Secret> secrets) {
-        
-        String finalScript = secretExports + command;
-
-        PipelineLog log = PipelineLog.builder()
-                .pipelineId(pipelineId)
-                .taskName(taskName)
-                .command(command)
-                .output("Executing...")
-                .timestamp(LocalDateTime.now())
-                .status("RUNNING")
-                .build();
-
-        final PipelineLog savedLog = logRepository.save(log);
-        messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, savedLog);
-
-        String result = SSHExecutor.executeSingleCommand(
-                ip,
-                username,
-                privateKey,
-                finalScript,
-                liveOut -> {
-                    savedLog.setOutput(liveOut);
-                    logRepository.save(savedLog);
-                    messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, savedLog);
-                }
-        );
-
-        savedLog.setOutput(result);
+    private void executeSingleCommandStep(String ip, String username, String privateKey, String command, String taskName) {
+        String result = SSHExecutor.executeSingleCommand(ip, username, privateKey, command, liveOut -> {});
         boolean failed = result.toUpperCase().startsWith("ERROR:");
-        savedLog.setStatus(failed ? "FAILED" : "SUCCESS");
-        logRepository.save(savedLog);
-        messagingTemplate.convertAndSend("/topic/logs/" + pipelineId, savedLog);
-
         if (failed) {
-            throw new RuntimeException("Pipeline failed at step: [" + command + "]");
+            throw new RuntimeException("Task Failed: " + taskName);
         }
     }
 
@@ -310,9 +233,5 @@ public class PipelineService {
     public String getPublicKey(Long id) {
         Pipeline pipeline = pipelineRepository.findById(id).orElseThrow(() -> new RuntimeException("Pipeline not found"));
         return pipeline.getPublicKey();
-    }
-
-    public void clearLogs(Long pipelineId) {
-        logRepository.deleteByPipelineId(pipelineId);
     }
 }

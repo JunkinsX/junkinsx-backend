@@ -45,7 +45,7 @@ public class PipelineController {
 
     @GetMapping("/execute/{id}")
     public String execute(@PathVariable Long id) {
-        pipelineService.runPipelineAsync(id);
+        pipelineService.runPipelineAsync(id, "Manual Run");
         return "Pipeline execution started in background.";
     }
     
@@ -59,8 +59,5 @@ public class PipelineController {
         return pipelineService.getPublicKey(id);
     }
 
-    @DeleteMapping("/logs/{id}")
-    public void clearLogs(@PathVariable Long id) {
-        pipelineService.clearLogs(id);
-    }
+
 }
