@@ -32,20 +32,22 @@ public class WebhookController {
             }
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(payload);
-            String repoUrl = root.path("repository").path("clone_url").asText();
-            String ref = root.path("ref").asText();
-            if (repoUrl == null || repoUrl.isEmpty()) {
-                return "No repo found";
+            String fullName = root.path("repository").path("full_name").asText();
+            if (fullName == null || fullName.isEmpty()) {
+                return "No repo full_name found";
             }
-            repoUrl = normalizeRepo(repoUrl);
-            String branch = ref.replace("refs/heads/", "");
-            System.out.println("Repo: " + repoUrl);
-            System.out.println("Branch: " + branch);
-            List<Pipeline> pipelines = pipelineRepository.findByRepoUrl(repoUrl);
-            for (Pipeline p : pipelines) {
-                pipelineService.runPipelineAsync(p.getId(), "GitHub Webhook");
+            
+            System.out.println("Webhook Push for: " + fullName);
+            
+            List<Pipeline> allPipelines = pipelineRepository.findAll();
+            int triggered = 0;
+            for (Pipeline p : allPipelines) {
+                if (p.getRepoUrl() != null && p.getRepoUrl().toLowerCase().contains(fullName.toLowerCase())) {
+                    pipelineService.runPipelineAsync(p.getId(), "GitHub Webhook");
+                    triggered++;
+                }
             }
-            return "Triggered pipelines: " + pipelines.size();
+            return "Triggered pipelines: " + triggered;
         } catch (Exception e) {
             return "Webhook error: " + e.getMessage();
         }
