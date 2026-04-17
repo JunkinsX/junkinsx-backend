@@ -186,6 +186,13 @@ public class PipelineService {
                                     }
                                 }
                                 
+                                // Smart Server Detach: Prevent SSH from hanging indefinitely on foreground servers.
+                                if (proc.endsWith("&")) {
+                                    proc = "nohup " + proc.substring(0, proc.length() - 1).trim() + " > /dev/null 2>&1 &";
+                                } else if (proc.trim().equals("npm start") || proc.trim().equals("npm run start")) {
+                                    proc = "nohup " + proc.trim() + " > /dev/null 2>&1 &";
+                                }
+
                                 scriptBuilder.append(substituteSecrets(proc, pipeline.getSecretList())).append("\n");
                             }
 
