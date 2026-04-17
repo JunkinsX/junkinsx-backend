@@ -28,5 +28,8 @@ public class PipelineHistory {
     private String status; // "RUNNING", "SUCCESS", "FAILED"
     private String failedAtTask;
 
+    @Column(columnDefinition = "TEXT")
+    private String finalLogs;
+
     private LocalDateTime timestamp;
 }

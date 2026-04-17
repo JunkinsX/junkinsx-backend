@@ -140,6 +140,7 @@ public class PipelineService {
         history = historyRepository.save(history);
 
         String failureMessage = null;
+        StringBuilder finalLogsBuilder = new StringBuilder();
 
         try {
             if (pipeline.getIpAddressBundle() == null || pipeline.getIpAddressBundle().isEmpty()) {
@@ -188,13 +189,16 @@ public class PipelineService {
                                 scriptBuilder.append(substituteSecrets(proc, pipeline.getSecretList())).append("\n");
                             }
 
-                            executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
+                            String outputText = executeSingleCommandStep(ip, bundle.getUsername(), pipeline.getPrivateKey(), 
                                     scriptBuilder.toString(), task.getTaskName());
+                            finalLogsBuilder.append("--- Task: ").append(task.getTaskName()).append(" --- \n");
+                            finalLogsBuilder.append(outputText).append("\n");
                         }
                     }
                 }
             }
             history.setStatus("SUCCESS");
+            history.setFinalLogs(finalLogsBuilder.toString());
 
         } catch (Exception e) {
             history.setStatus("FAILED");
@@ -206,6 +210,8 @@ public class PipelineService {
             }
             if (failureMessage == null) failureMessage = e.getMessage();
             System.err.println("Pipeline failed: " + failureMessage);
+            finalLogsBuilder.append("\nFATAL ERROR: ").append(failureMessage);
+            history.setFinalLogs(finalLogsBuilder.toString());
         }
         
         historyRepository.save(history);
@@ -217,12 +223,13 @@ public class PipelineService {
         }
     }
 
-    private void executeSingleCommandStep(String ip, String username, String privateKey, String command, String taskName) {
+    private String executeSingleCommandStep(String ip, String username, String privateKey, String command, String taskName) {
         String result = SSHExecutor.executeSingleCommand(ip, username, privateKey, command, liveOut -> {});
         boolean failed = result.toUpperCase().startsWith("ERROR:");
         if (failed) {
-            throw new RuntimeException("Task Failed: " + taskName);
+            throw new RuntimeException("Task Failed: " + taskName + "\n" + result);
         }
+        return result;
     }
 
     public List<Pipeline> getAllPipeline(Long userId){
